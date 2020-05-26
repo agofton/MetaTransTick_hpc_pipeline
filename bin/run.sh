@@ -19,7 +19,7 @@ job1=$(sbatch ${qc})
 job1ID=$(sed 's/Submitted batch job //g' <<< ${job1})
 	
 	echo ""
-	echo "Job 1: Quality Trimming; ${qc} queued with jobid=${Job1ID}."
+	echo "Job 1: Quality Trimming; ${qc} queued with jobid=${job1ID}."
 	echo ""
 
 # derep

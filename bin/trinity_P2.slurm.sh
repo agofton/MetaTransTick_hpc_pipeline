@@ -28,20 +28,26 @@ in_array=("recursive_trinity.cmds.chunk.00" \
 if [ ! -z "$SLURM_ARRAY_TASK_ID" ]
 then
 	i=${SLURM_ARRAY_TASK_ID}
-	
+
+
 	/apps/trinity/2.8.4/trinity-plugins/BIN/ParaFly \
 		-c SCRATCHDIR/SAMPLEID_trinity_out/${in_array[$i]} \
 		-CPU 20 \
 		-v \
 		-shuffle
-		
+	# move data back to working dir and remove symlink
+	mkdir ${out}/read_partitions
+	
+
 	if [ $? -ne 0 ]
 	then
-		echo ParaFly failed: ${in_array[$i]}; date; exit 1
+		echo ""; echo ParaFly failed: ${in_array[$i]}; date; exit 1
 	else
 		echo ""
 		echo date
 		echo ""
+	fi
+
 else
 	echo "Error: missing array index as SLURM_ARRAY_TASK_ID"
 fi

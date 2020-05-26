@@ -33,9 +33,9 @@ diamond blastx --threads ${SLURM_CPUS_PER_TASK} \
 
 # flow control
 if [ $? -eq 0 ]; then
-	echo "Diamond finished sucessfully: ${input}"; date
+	echo ""; echo "Diamond finished sucessfully: ${input}"; date
 else
-	echo "Diamond failed: ${input}"; date; exit 1
+	echo ""; echo "Diamond failed: ${input}"; date; exit 1
 fi
 
 # counting number of hits

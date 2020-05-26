@@ -3,9 +3,11 @@
 #SBATCH --job-name=TrP1_SAMPLEID
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=20
-#SBATCH --time=00:30:00
+#SBATCH --time=24:00:00
 #SBATCH --output=../logs/trinity_P1_SAMPLEID_%A.log
-#SBATCH --mem=128GB
+#SBATCH --mem=512GB
+
+# MEMORY IN GB IS HARDCODED BELOW BECAUSE SLURM ENV VAR PRINTS IN KB NOT GB
 
 module load trinity/2.8.4
 module load perl
@@ -19,10 +21,10 @@ R2=SCRATCHDIR/SAMPLEID_R2.derep.fastq.gz
 out=SCRATCHDIR/SAMPLEID_trinity_out
 
 # link read_partions to /dev/shm/gof005.${SLURM_ID}/read_partitions
-#mkdir ${out}
-#rm -f ${out}/read_partitions
-#mkdir ${MEMDIR}/read_partitions
-#ln -s ${MEMDIR}/read_partitions ${out}
+mkdir ${out}
+rm -f ${out}/read_partitions
+mkdir ${MEMDIR}/read_partitions
+ln -s ${MEMDIR}/read_partitions ${out}
 
 echo ""
 date
@@ -31,7 +33,7 @@ echo ""
 Trinity \
 	--no_distributed_trinity_exec \
 	--seqType fq \
-	--max_memory ${SLURM_MEM_PER_NODE}G \
+	--max_memory 510G \
 	--left ${R1} \
 	--right ${R2} \
 	--CPU ${SLURM_NTASKS} \
@@ -45,6 +47,12 @@ if [ $? -eq 0 ]; then
 else
 	echo "Trinity failed: ${R1}, ${R2}"; date; exit 1
 fi
+
+# break symlink to /dev/shm & move data back to working dir
+mkdir ${out}/rp 	# creat new dir for data in working dir
+mv ${MEMDIR}/read_partitions ${out}/rp #move data from/dev/shm to working directory
+rm -f ${out}/read_partitions # remove symlink pointer
+mv ${out}/rp ${out}/read_partitions # remane data to read_partitions
 
 # split up recursive_trinity.cmds into 10 chunks (1 chunk per node)
 split -d -n l/10 \

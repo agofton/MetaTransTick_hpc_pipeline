@@ -32,9 +32,9 @@ dedupe.sh \
 
 # flow control
 if [ $? -ne 0 ]; then
-	echo "DEDUPE failed: ${in1}, ${in2}"; date; exit 1
+	echo ""; echo "DEDUPE failed: ${in1}, ${in2}"; date; exit 1
 else
-	echo "DEDUPE finished sucessfully: ${in1}, ${in2}"; date
+	echo ""; echo "DEDUPE finished sucessfully: ${in1}, ${in2}"; date; echo ""
 fi
 
 # converts intleaved to paired
@@ -42,6 +42,13 @@ reformat.sh \
 	in=${int} \
 	out1=${out1} \
 	out2=${out2}
+
+# flow control
+if [ $? -ne 0 ]; then
+	echo ""; echo "REFORMAT failed: ${int}"; date; exit 1
+else
+	echo ""; echo "REFORMAT finished sucessfully: ${int}"; date; echo ""
+fi
 
 # cleanup
 rm -f ${int}
@@ -53,18 +60,19 @@ fastqc --outdir SCRATCHDIR/fastqc_derep --format fastq --threads ${SLURM_CPUS_PE
 
 # flow control
 if [ $? -ne 0 ]; then
-	echo "FASTQC failed: ${out1}, ${out2}" ; date ; exit 1
+	echo ""; echo "FASTQC failed: ${out1}, ${out2}" ; date ; exit 1
 else
-	echo "FastQC finished sucessfully: ${out1}, ${out2}" ; date
+	echo "" echo "FastQC finished sucessfully: ${out1}, ${out2}" ; date; echo ""
 fi
 
 # Reporting number of reads at each step
 count_in1=$(zcat ${in1} | grep -c "^+")
-connt_in2=$(zcat ${in2} | grep -c "^+")
+count_in2=$(zcat ${in2} | grep -c "^+")
 
 count_out1=$(zcat ${out1} | grep -c "^+")
-connt_out2=$(zcat ${out2} | grep -c "^+")
+count_out2=$(zcat ${out2} | grep -c "^+")
 
+echo ""
 echo "# Reads in input and output"
 echo "${in1}: ${count_in1}"
 echo "${in2}: ${count_in2}"

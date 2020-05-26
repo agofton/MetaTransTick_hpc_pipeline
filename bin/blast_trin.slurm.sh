@@ -34,9 +34,9 @@ blastn \
 
 # flow control
 if [ $? -eq 0 ]; then
-	echo "Megablast finished sucessfully: ${in}"; date
+	echo ""; echo "Megablast finished sucessfully: ${in}"; date
 else
-	echo "Megablast failed: ${in}"; date; exit 1
+	echo ""; echo "Megablast failed: ${in}"; date; exit 1
 fi
 
 # counting number of hits

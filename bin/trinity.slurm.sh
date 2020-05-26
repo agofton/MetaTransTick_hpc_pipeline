@@ -47,6 +47,13 @@ else
 	echo "Trinity failed: ${R1}, ${R2}"; date; exit 1
 fi
 
+# unlinking symlink to /dev/shm and move data back to working dir
+mkdir ${out}/read_partitions_syml
+unlink ${out}/
+mv ${MEMDIR}/read_partitions/* ${out}/read_partitions_syml/
+rm -rf ${out}/read_partitions:
+mv ${out}/read_partitions_syml ${out}/read_partitions
+
 # manipulating output
 mv SCRATCHDIR/SAMPLEID_trinity_out.Trinity.fasta SCRATCHDIR/SAMPLEID.trinity.fasta
 sed -i 's/>TRINITY/>SAMPLEID_TRINITY/g' SCRATCHDIR/SAMPLEID.trinity.fasta
