@@ -49,10 +49,12 @@ else
 fi
 
 # break symlink to /dev/shm & move data back to working dir
-mkdir ${out}/rp 	# creat new dir for data in working dir
-mv ${MEMDIR}/read_partitions ${out}/rp #move data from/dev/shm to working directory
+mkdir ${out}/rp_tmp 	# creat new dir for data in working dir
+mv ${MEMDIR}/read_partitions ${out}/rp_tmp #move data from/dev/shm to working directory
 rm -f ${out}/read_partitions # remove symlink pointer
-mv ${out}/rp ${out}/read_partitions # remane data to read_partitions
+mv ${out}/rp_tmp/read_partitions ${out} # remane data to read_partitions
+rm -rf ${out}/rp_tmp # remove tmp dir
+cp -r ${out}/read_partitions ${out}/read_partitions_copy # make backup incase of failed jobs
 
 # split up recursive_trinity.cmds into 10 chunks (1 chunk per node)
 split -d -n l/10 \

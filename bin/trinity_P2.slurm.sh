@@ -35,9 +35,6 @@ then
 		-CPU 20 \
 		-v \
 		-shuffle
-	# move data back to working dir and remove symlink
-	mkdir ${out}/read_partitions
-	
 
 	if [ $? -ne 0 ]
 	then
