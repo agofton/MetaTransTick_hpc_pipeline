@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=10
 #SBATCH --mem=60GB
 #SBATCH --output=../logs/QC_SAMPLEID_%A.log
-#SBATCH --time=00:10:00
+#SBATCH --time=02:00:00
 
 module load fastqc/0.11.8
 module load trimmomatic/0.38
