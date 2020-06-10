@@ -1,35 +1,51 @@
 #!/bin/bash
 
-hm1="Initialised all folders and scripts needed for analysis. Assumes input files are in the format: sample_xxx_R1.fastq.gz & sample_xxx_R2.fastq.gz, where 'sample_xxx_' can be whatever samples ID you want. This sample ID will be carried through the whole analysis and appended onto the transcript IDs - so make sure it is not too long."
-hm2="usage: ./init.sh -f fwd_file_R1.fastq.gz -r rev_file_R2.fastq.gz -o output_directory"
-hm3="A folder will be created in [-o] from the sampleID from the input file names, all output will go there."
-hm4="USE COMPLETE PATH TO AVOID FUCK UPS!!!!!"
+helpMessage() {
+	echo "$0 usage: -f sample_x_R1.fastq.gz <raw input R1 file> -r sample_x_R2.fastq.gz <raw input R1 file> -o <output folder> -h show this message";
+	echo "";
+	echo "Initialises all folders and scripts needed for analysis. Assumes input files are in the format: sample_xxx_R1.fastq.gz & sample_xxx_R2.fastq.gz, where 'sample_xxx_' can be whatever samples ID you want. This sample ID will be carried through the whole analysis and appended onto the transcript IDs - so make sure it is not too long.";
+	echo "";
+	echo "USE COMPLETE PATH TO AVOID FUCK UPS!";
+	echo "";
+	exit 1;
+}
+
+errorExit() {
+	msg=$1
+	exitCode=${2:-1}
+	echo ${msg};
+	exit ${exitCode};
+}
 
 # Command line arguments
-while getopts hf:r:o: option
+while getopts "hf:r:o:" OPT
 do
-	case "${option}"
+	case "${OPT}"
 		in
-	        h) echo ${hm1}
-			   echo ${hm2}
-			   echo ${hm3}
-			   echo ${hm4}
-	           echo ""
-	           exit;;
+	        h) helpMessage;;
 	        f) R1=${OPTARG};;
 	        r) R2=${OPTARG};;
 			o) output_dir=${OPTARG};;
-	        :) printf "missing argument for  -%s\n" "$OPTARG" >&2
-	           echo "$usage" >&2
-	           exit 1;;
-	   	   \?) printf "illegal option: -%s\n" "$OPTARG" >&2
-	           echo "$usage" >&2
-	           exit 1;;
 	esac
 done
 shift $((OPTIND - 1))
 
-echo ""
+# check input files
+if [ ! -f "${R1}" ]; then
+	errorExit "Input R1 file does not exist."
+fi
+
+if [ ! -f "${R2}" ]; then
+	errorExit "Input R2 file does not exits."
+fi
+
+if [ "${R1}" == "${R2}" ]; then
+	errorExit "Input error: -f and -r cannot be the same."
+fi
+
+if [ -d "${output_dir}" ]
+	errorExit "Output directory already exists. Cannot overwrite."
+fi
 
 # Get sample ID from R1 and R2 input.
 # Assumes file names are in format whatever_sampleX_R1.fastq.gz & whatever_sampleX_R2.fastq.gz
@@ -52,7 +68,7 @@ cp ${R1} ${out_dir}/
 if [ $? -eq 0 ]; then
 	echo "${R1} copied to ${out_dir}."
 else
-	exit
+	errorExit "Copying raw R1 failed."
 fi
 
 cp ${R2} ${out_dir}/
@@ -60,7 +76,7 @@ cp ${R2} ${out_dir}/
 if [ $? -eq 0 ]; then
 	echo "${R2} copied to ${out_dir}."
 else
-	exit
+	errorExit "Copying raw R2 failed."
 fi
 
 echo ""
@@ -77,7 +93,7 @@ do
 	if [ $? -eq 0 ]; then
 		echo "${new_filename} copied to working directory."
 	else
-		exit
+		errorExit "Copying scripts failed."
 	fi
 done
 
@@ -91,13 +107,11 @@ sed -i s/SAMPLEID/${sampleID}/g ${scripts_dir}/${new_run_script} 	# SAMPLEID is 
 	if [ $? -eq 0 ]; then
 		echo "${new_run_script} copied to working directory."
 	else
-		exit
+		errorExit "Copying run.sh failed."
 	fi
 
 echo ""
 echo "Output and tmp directories and analysis scripts created..."
-echo ""
-echo "Input files copied to ${sf} for analysis."
 echo ""
 echo "Run ${out_dir}/scripts/run.${sampleID}.sh to start analysis."
 echo ""
