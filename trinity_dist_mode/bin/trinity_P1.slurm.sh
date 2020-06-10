@@ -16,9 +16,9 @@ module load bowtie/2.2.9
 export OMP_NUM_THREADS=${SLURM_NTASKS}
 
 # inputs
-R1=SCRATCHDIR/SAMPLEID_R1.derep.fastq.gz
-R2=SCRATCHDIR/SAMPLEID_R2.derep.fastq.gz
-out=SCRATCHDIR/SAMPLEID_trinity_out
+R1=OUTDIR/SAMPLEID_R1.derep.fastq.gz
+R2=OUTDIR/SAMPLEID_R2.derep.fastq.gz
+out=OUTDIR/SAMPLEID_trinity_out
 
 # link read_partions to /dev/shm/gof005.${SLURM_ID}/read_partitions
 mkdir ${out}
@@ -58,8 +58,8 @@ cp -r ${out}/read_partitions ${out}/read_partitions_copy 	# make backup incase o
 
 # split up recursive_trinity.cmds into 10 chunks (1 chunk per node)
 split -d -n l/10 \
-	SCRATCHDIR/SAMPLEID_trinity_out/recursive_trinity.cmds \
-	SCRATCHDIR/SAMPLEID_trinity_out/recursive_trinity.cmds.chunk.
+	OUTDIR/SAMPLEID_trinity_out/recursive_trinity.cmds \
+	OUTDIR/SAMPLEID_trinity_out/recursive_trinity.cmds.chunk.
 
 #output will be:
 # 	recursive_trinity.cmds.chunk.00

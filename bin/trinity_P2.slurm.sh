@@ -29,9 +29,8 @@ if [ ! -z "$SLURM_ARRAY_TASK_ID" ]
 then
 	i=${SLURM_ARRAY_TASK_ID}
 
-
 	/apps/trinity/2.8.4/trinity-plugins/BIN/ParaFly \
-		-c SCRATCHDIR/SAMPLEID_trinity_out/${in_array[$i]} \
+		-c OUTDIR/SAMPLEID_trinity_out/${in_array[$i]} \
 		-CPU 20 \
 		-v \
 		-shuffle

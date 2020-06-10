@@ -18,13 +18,13 @@ date
 echo ""
 
 # 1. fastqc on raw data
-in1=SCRATCHDIR/SAMPLEID_R1.fastq.gz
-in2=SCRATCHDIR/SAMPLEID_R2.fastq.gz
+in1=OUTDIR/SAMPLEID_R1.fastq.gz
+in2=OUTDIR/SAMPLEID_R2.fastq.gz
 
-mkdir SCRATCHDIR/fastqc_raw
+mkdir OUTDIR/fastqc_raw
 
 fastqc \
-	--outdir SCRATCHDIR/fastqc_raw \
+	--outdir OUTDIR/fastqc_raw \
 	--format fastq \
 	--threads ${SLURM_CPUS_PER_TASK} ${in1} ${in2}
 
@@ -36,8 +36,8 @@ else
 fi
 
 # 2. removing sequencing adapters and distal bases
-cut_out1=SCRATCHDIR/SAMPLEID_R1.cutadapt.fastq.gz
-cut_out2=SCRATCHDIR/SAMPLEID_R2.cutadapt.fastq.gz
+cut_out1=OUTDIR/SAMPLEID_R1.cutadapt.fastq.gz
+cut_out2=OUTDIR/SAMPLEID_R2.cutadapt.fastq.gz
 
 cutadapt \
 	-j ${SLURM_CPUS_PER_TASK} \
@@ -58,11 +58,11 @@ else
 fi
 
 # 3. trim low quality reads with a sliding window and remove short seqs < 30 bp
-trim_sum=SCRATCHDIR/SAMPLEID.trimmomatic.summary
-trim_paired_R1=SCRATCHDIR/SAMPLEID_R1.QC.paired.fastq.gz
-trim_unpaired_R1=SCRATCHDIR/SAMPLEID_R1.QC.unpaired.fastq.gz
-trim_paired_R2=SCRATCHDIR/SAMPLEID_R2.QC.paired.fastq.gz
-trim_unpaired_R2=SCRATCHDIR/SAMPLEID_R2.QC.unpaired.fastq.gz
+trim_sum=OUTDIR/SAMPLEID.trimmomatic.summary
+trim_paired_R1=OUTDIR/SAMPLEID_R1.QC.paired.fastq.gz
+trim_unpaired_R1=OUTDIR/SAMPLEID_R1.QC.unpaired.fastq.gz
+trim_paired_R2=OUTDIR/SAMPLEID_R2.QC.paired.fastq.gz
+trim_unpaired_R2=OUTDIR/SAMPLEID_R2.QC.unpaired.fastq.gz
 
 trimmomatic PE \
 	-threads ${SLURM_CPUS_PER_TASK} \
@@ -80,10 +80,10 @@ else
 fi
 
 # fastqc on QC data
-mkdir SCRATCHDIR/fastqc_QC
+mkdir OUTDIR/fastqc_QC
 
 fastqc \
-	--outdir SCRATCHDIR/fastqc_QC \
+	--outdir OUTDIR/fastqc_QC \
 	--format fastq \
 	--threads ${SLURM_CPUS_PER_TASK} \
 	${trim_paired_R1} ${trim_paired_R2} ${trim_unpaired_R1} ${trim_unpaired_R2}
@@ -114,17 +114,6 @@ echo "${trim_paired_R1}: ${count_trim_paired_R1}"
 echo "${trim_paired_R2}: ${count_trim_paired_R2}"
 echo "${trim_unpaired_R1}: ${count_trim_unpaired_R1}"
 echo "${trim_unpaired_R2}: ${count_trim_unpaired_R2}"
-
-# moving output back to hb-auticks
-cp -r SCRATCHDIR/fastqc_raw OUTDIR/fastqc_raw
-cp -r SCRATCHDIR/fastqc_QC OUTDIR/fastqc_QC
-cp ${cut_out1} OUTDIR/
-cp ${cut_out2} OUTDIR/
-cp ${trim_sum} OUTDIR/
-cp ${trim_paired_R1} OUTDIR/
-cp ${trim_paired_R2} OUTDIR/
-cp ${trim_unpaired_R1} OUTDIR/
-cp ${trim_unpaired_R2} OUTDIR/
 
 # print end date
 echo ""

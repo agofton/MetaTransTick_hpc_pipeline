@@ -16,11 +16,11 @@ date
 echo ""
 
 # input & output variables
-in1=SCRATCHDIR/SAMPLEID_R1.QC.paired.fastq.gz
-in2=SCRATCHDIR/SAMPLEID_R2.QC.paired.fastq.gz
-int=SCRATCHDIR/SAMPLEID.derep.interleaved.fastq.gz
-out1=SCRATCHDIR/SAMPLEID_R1.derep.fastq.gz
-out2=SCRATCHDIR/SAMPLEID_R2.derep.fastq.gz
+in1=OUTDIR/SAMPLEID_R1.QC.paired.fastq.gz
+in2=OUTDIR/SAMPLEID_R2.QC.paired.fastq.gz
+int=OUTDIR/SAMPLEID.derep.interleaved.fastq.gz
+out1=OUTDIR/SAMPLEID_R1.derep.fastq.gz
+out2=OUTDIR/SAMPLEID_R2.derep.fastq.gz
 
 # removes only optical duplicates when both R1 & R2 are identical. output is interleaved
 dedupe.sh \
@@ -54,9 +54,12 @@ fi
 rm -f ${int}
 
 # fastqc on derep files
-mkdir SCRATCHDIR/fastqc_derep
+mkdir OUTDIR/fastqc_derep
 
-fastqc --outdir SCRATCHDIR/fastqc_derep --format fastq --threads ${SLURM_CPUS_PER_TASK} ${out1} ${out2}
+fastqc --outdir OUTDIR/fastqc_derep \
+	   --format fastq \
+	   --threads ${SLURM_CPUS_PER_TASK} \
+	   ${out1} ${out2}
 
 # flow control
 if [ $? -ne 0 ]; then
@@ -78,11 +81,6 @@ echo "${in1}: ${count_in1}"
 echo "${in2}: ${count_in2}"
 echo "${out1}: ${count_out1}"
 echo "${out2}: ${count_out2}"
-
-# copying outputs back to hb-austicks
-cp -r SCRATCHDIR/fastqc_derep OUTDIR/fastqc_raw
-cp ${out1} OUTDIR/
-cp ${out2} OUTDIR/
 
 # print end date
 echo ""

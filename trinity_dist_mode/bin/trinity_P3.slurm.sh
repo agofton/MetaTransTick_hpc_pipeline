@@ -19,11 +19,11 @@ echo ""
 # final job putting together all assemblies into xxx.Trinity.fasta
 
 find \
-	SCRATCHDIR/SAMPLEID_trinity_out/read_partitions/ \
+	OUTDIR/SAMPLEID_trinity_out/read_partitions/ \
 	-name '*inity.fasta' | \
 	/apps/trinity/2.8.4/util/support_scripts/partitioned_trinity_aggregator.pl \
 	--token_prefix TRINITY_DN \
-	--output_prefix SCRATCHDIR/SAMPLEID_trinity_out/Trinity.tmp
+	--output_prefix OUTDIR/SAMPLEID_trinity_out/Trinity.tmp
 
 # flow control
 if [ $? -ne 0 ]; then
@@ -32,8 +32,8 @@ else
 	echo ""; echo "FIND complete."; date; echo ""
 fi
 
-mv SCRATCHDIR/SAMPLEID_trinity_out/Trinity.tmp.fasta \
-	SCRATCHDIR/SAMPLEID_trinity_out.Trinity.fasta
+mv OUTDIR/SAMPLEID_trinity_out/Trinity.tmp.fasta \
+	OUTDIR/SAMPLEID_trinity_out.Trinity.fasta
 
 # flow control
 if [ $? -ne 0 ]; then
@@ -43,8 +43,8 @@ else
 fi
 
 /apps/trinity/2.8.4/util/support_scripts/get_Trinity_gene_to_trans_map.pl \
-	SCRATCHDIR/SAMPLEID_trinity_out.Trinity.fasta > \
-	SCRATCHDIR/SAMPLEID_trinity_out.Trinity.fasta.gene_trans_map
+	OUTDIR/SAMPLEID_trinity_out.Trinity.fasta > \
+	OUTDIR/SAMPLEID_trinity_out.Trinity.fasta.gene_trans_map
 
 # flow control
 if [ $? -ne 0 ]; then
@@ -54,7 +54,7 @@ else
 fi
 
 # manipulating output
-mv SCRATCHDIR/SAMPLEID_trinity_out.Trinity.fasta SCRATCHDIR/SAMPLEID.trinity.fasta
+mv OUTDIR/SAMPLEID_trinity_out.Trinity.fasta OUTDIR/SAMPLEID.trinity.fasta
 
 # flow control
 if [ $? -ne 0 ]; then
@@ -63,7 +63,7 @@ else
 	echo ""; echo "mv complete."; date; echo ""
 fi
 
-sed -i 's/>TRINITY/>SAMPLEID_TRINITY/g' SCRATCHDIR/SAMPLEID.trinity.fasta
+sed -i 's/>TRINITY/>SAMPLEID_TRINITY/g' OUTDIR/SAMPLEID.trinity.fasta
 
 # flow control
 if [ $? -ne 0 ]; then
@@ -73,16 +73,12 @@ else
 fi
 
 # counting transcipts
-count=$(grep -c "^>" SCRATCHDIR/SAMPLEID.trinity.fasta)
+count=$(grep -c "^>" OUTDIR/SAMPLEID.trinity.fasta)
 
 echo "Number of transcripts."
-echo "SCRATCHDIR/SAMPLEID.trinity.fasta: ${count}"
+echo "OUTDIR/SAMPLEID.trinity.fasta: ${count}"
 
-# moving output back to hb-auticks
-cp SCRATCHDIR/SAMPLEID.trinity.fasta OUTDIR/
-
-echo ""
-echo "SAMPLEID.trinity.fasta copies to OUTDIR"
+# sign off
 echo ""
 echo "Trinity completed successfully."
 date
