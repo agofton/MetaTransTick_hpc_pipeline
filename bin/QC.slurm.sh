@@ -1,121 +1,72 @@
 #!/bin/bash
+date
 
-#SBATCH --job-name=QC_SAMPLEID
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=10
-#SBATCH --mem=60GB
-#SBATCH --output=../logs/QC_SAMPLEID_%A.log
-#SBATCH --time=02:00:00
+flowControl() {
+	if [ $? -ne 0 ]; then
+		echo $1; date; exit 1;
+	else
+		echo $2; date; echo "";
+	fi
+}
 
 module load fastqc/0.11.8
 module load trimmomatic/0.38
 module load python/3.6.1
 module load bbtools/38.37
 
-echo ""
-date
-echo ""
+# Fastqc on raw data
+in1=../SAMPLEID_R1.fastq.gz
+in2=../SAMPLEID_R2.fastq.gz
 
-# 1. fastqc on raw data
-in1=OUTDIR/SAMPLEID_R1.fastq.gz
-in2=OUTDIR/SAMPLEID_R2.fastq.gz
+mkdir ../fastqc_raw
+fastqc --outdir ../fastqc_raw --format fastq --threads ${SLURM_CPUS_PER_TASK} ${in1} ${in2}
 
-mkdir OUTDIR/fastqc_raw
+flowControl "FASTQC failed: ${in1}, ${in2}" "FastQC finished sucessfully: ${in1}, ${in2}" 
 
-fastqc \
-	--outdir OUTDIR/fastqc_raw \
-	--format fastq \
-	--threads ${SLURM_CPUS_PER_TASK} ${in1} ${in2}
+# Removing sequencing adapters and distal bases
+cutOut1=../SAMPLEID_R1.cutadapt.fastq.gz
+cutOut2=../SAMPLEID_R2.cutadapt.fastq.gz
 
-# flow control
-if [ $? -ne 0 ]; then
-	echo ""; echo "FASTQC failed: ${in1}, ${in2}" ; date ; exit 1
-else
-	echo ""; echo "FastQC finished sucessfully: ${in1}, ${in2}" ; date; echo ""
-fi
+cutadapt -j ${SLURM_CPUS_PER_TASK} -a AGATCGGAAGAG -A AGATCGGAAGAG --no-indels -O 4 -m 30 -o ${cutOut1} -p ${cutOut2} ${in1} ${in2}
+flowControl "CUTADAPT failed: ${in1}, ${in2}" "CUTADAPT finished sucessfully: ${in1}, ${in2}"
 
-# 2. removing sequencing adapters and distal bases
-cut_out1=OUTDIR/SAMPLEID_R1.cutadapt.fastq.gz
-cut_out2=OUTDIR/SAMPLEID_R2.cutadapt.fastq.gz
+# Trim low quality reads with a sliding window and remove short seqs < 30 bp
+trimSum=../SAMPLEID.trimmomatic.summary
+trimPEr1=../SAMPLEID_R1.QC.paired.fastq.gz
+trimUPr1=../SAMPLEID_R1.QC.unpaired.fastq.gz
+trimPEr2=../SAMPLEID_R2.QC.paired.fastq.gz
+trimUPr2=../SAMPLEID_R2.QC.unpaired.fastq.gz
 
-cutadapt \
-	-j ${SLURM_CPUS_PER_TASK} \
-	-a AGATCGGAAGAG \
-	-A AGATCGGAAGAG \
-	--no-indels \
-	-O 4 \
-	-m 30 \
-	-o ${cut_out1} \
-	-p ${cut_out2} \
-	${in1} ${in2}
+trimmomatic PE -threads ${SLURM_CPUS_PER_TASK} -summary ${trimSum} \
+	${cutOut1} ${cutOut2} \
+	${trimPEr1} ${trimUPr1} ${trimPEr2} ${trimUPr2} \
+	SLIDINGWINDOW:5:15 MINLEN:30
+flowControl "TRIMMOMATIC failed: ${cutOut1}, ${cutOut2}" "TRIMMOMATIC finished sucessfully: ${cutOut1}, ${cutOut2}"
 
-# flow control
-if [ $? -ne 0 ]; then
-	echo ""; echo "CUTADAPT failed: ${in1}, ${in2}" ; date ; exit 1
-else
-	echo ""; echo "CUTADAPT finished sucessfully: ${in1}, ${in2}" ; date; echo ""
-fi
-
-# 3. trim low quality reads with a sliding window and remove short seqs < 30 bp
-trim_sum=OUTDIR/SAMPLEID.trimmomatic.summary
-trim_paired_R1=OUTDIR/SAMPLEID_R1.QC.paired.fastq.gz
-trim_unpaired_R1=OUTDIR/SAMPLEID_R1.QC.unpaired.fastq.gz
-trim_paired_R2=OUTDIR/SAMPLEID_R2.QC.paired.fastq.gz
-trim_unpaired_R2=OUTDIR/SAMPLEID_R2.QC.unpaired.fastq.gz
-
-trimmomatic PE \
-	-threads ${SLURM_CPUS_PER_TASK} \
-	-summary ${trim_sum} \
-	${cut_out1} ${cut_out2} \
-	${trim_paired_R1} ${trim_unpaired_R1} ${trim_paired_R2} ${trim_unpaired_R2} \
-	SLIDINGWINDOW:5:15 \
-	MINLEN:30
-
-# flow control
-if [ $? -ne 0 ]; then
-	echo ""; echo "TRIMMOMATIC failed: ${cut_out1}, ${cut_out2}" ; date ; exit 1
-else
-	echo ""; echo "TRIMMOMATIC finished sucessfully: ${cut_out1}, ${cut_out2}" ; date; echo ""
-fi
-
-# fastqc on QC data
-mkdir OUTDIR/fastqc_QC
-
-fastqc \
-	--outdir OUTDIR/fastqc_QC \
-	--format fastq \
-	--threads ${SLURM_CPUS_PER_TASK} \
-	${trim_paired_R1} ${trim_paired_R2} ${trim_unpaired_R1} ${trim_unpaired_R2}
-
-# flow control
-if [ $? -ne 0 ]; then
-	echo ""; echo "FASTQC failed: ${trim_paired_R1}, ${trim_paired_R2}, ${trim_unpaired_R1}, ${trim_unpaired_R2}" ; date ; exit 1
-else
-	echo ""; echo "FastQC finished sucessfully: ${trim_paired_R1}, ${trim_paired_R2}, ${trim_unpaired_R1}, ${trim_unpaired_R2}" ; date; echo ""
-fi
+# Fastqc on QC data
+mkdir ../fastqc_QC
+fastqc --outdir ../fastqc_QC --format fastq --threads ${SLURM_CPUS_PER_TASK} \
+	${trimPEr1} ${trimPEr2} ${trimUPr1} ${trimUPr2}
+flowControl "FASTQC failed: ${trimPEr1}, ${trimPEr2}, ${trimUPr1}, ${trimUPr2}" "FastQC finished sucessfully: ${trimPEr1}, ${trimPEr2}, ${trimUPr1}, ${trimUPr2}"
 
 # Reporting number of reads at each step
-count_in1=$(zcat ${in1} | grep -c "^+")
-count_in2=$(zcat ${in2} | grep -c "^+")
-count_cut_out1=$(zcat ${cut_out1} | grep -c "^+")
-count_cut_out2=$(zcat ${cut_out2} | grep -c "^+")
-count_trim_paired_R1=$(zcat ${trim_paired_R1} | grep -c "^+")
-count_trim_paired_R2=$(zcat ${trim_paired_R2} | grep -c "^+")
-count_trim_unpaired_R1=$(zcat ${trim_unpaired_R1} | grep -c "^+")
-count_trim_unpaired_R2=$(zcat ${trim_unpaired_R2} | grep -c "^+")
+countIn1=$(zcat ${in1} | grep -c "^+")
+countIn2=$(zcat ${in2} | grep -c "^+")
+countCutOut1=$(zcat ${cutOut1} | grep -c "^+")
+countCutOut2=$(zcat ${cutOut2} | grep -c "^+")
+countTrimPEr1=$(zcat ${trimPEr1} | grep -c "^+")
+countTrimPEr2=$(zcat ${trimPEr2} | grep -c "^+")
+countTrimUPr1=$(zcat ${trimUPr1} | grep -c "^+")
+countTrimUPr2=$(zcat ${trimUPr2} | grep -c "^+")
 
 echo "# reads in inputs and outputs."
-echo "${in1}: ${count_in1}"
-echo "${in2}: ${count_in2}"
-echo "${cut_out1}: ${count_cut_out1}"
-echo "${cut_out2}: ${count_cut_out2}"
-echo "${trim_paired_R1}: ${count_trim_paired_R1}"
-echo "${trim_paired_R2}: ${count_trim_paired_R2}"
-echo "${trim_unpaired_R1}: ${count_trim_unpaired_R1}"
-echo "${trim_unpaired_R2}: ${count_trim_unpaired_R2}"
+echo "${in1}: ${countIn1}"
+echo "${in2}: ${countIn2}"
+echo "${cutOut1}: ${countCutOut1}"
+echo "${cutOut2}: ${countCutOut2}"
+echo "${trimPEr1}: ${countTrimPEr1}"
+echo "${trimPEr2}: ${countTrimPEr2}"
+echo "${trimUPr1}: ${countTrimUPr1}"
+echo "${trimUPr2}: ${countTrimUPr2}"
 
-# print end date
-echo ""
 date
-echo ""

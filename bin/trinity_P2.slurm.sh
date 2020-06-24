@@ -1,47 +1,37 @@
 #!/bin/bash
 
-#SBATCH -J TrP2_SAMPLEID
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=20
-#SBATCH --time=06:00:00
-#SBATCH --output=../logs/trinity_P2_SAMPLEID_%A_%a.out
-#SBATCH --mem=128GB
-#SBATCH --array=0-9
+flowControl() {
+	if [ $? -ne 0 ]
+	then
+		echo $1; date; exit 1;
+	else
+		echo $2
+	fi
+}
+
+createArray() {
+	array="(`for x in ${1}
+	do
+		echo -n '"'
+		echo -n ${x}
+		echo -n '"'
+	done`);"
+	array=`sed -E 's@""@" \\\\\\n"@g' <<< ${array}
+}
 
 module load trinity/2.8.4
-
 export OMP_NUM_THREADS=20
 
-# array will need to be manually expanded if more chunks are used. def(10)
-in_array=("recursive_trinity.cmds.chunk.00" \
-	"recursive_trinity.cmds.chunk.01" \
-	"recursive_trinity.cmds.chunk.02" \
-	"recursive_trinity.cmds.chunk.03" \
-	"recursive_trinity.cmds.chunk.04" \
-	"recursive_trinity.cmds.chunk.05" \
-	"recursive_trinity.cmds.chunk.06" \
-	"recursive_trinity.cmds.chunk.07" \
-	"recursive_trinity.cmds.chunk.08" \
-	"recursive_trinity.cmds.chunk.09");
+createArray "../SAMPLEID_trinity_out/recursive_trinity.cmds.chunk.??"
+inArray=${array}
+
+flowControl "Error in creating input file array for slurm array script." " "
 
 if [ ! -z "$SLURM_ARRAY_TASK_ID" ]
 then
 	i=${SLURM_ARRAY_TASK_ID}
-
-	/apps/trinity/2.8.4/trinity-plugins/BIN/ParaFly \
-		-c OUTDIR/SAMPLEID_trinity_out/${in_array[$i]} \
-		-CPU 20 \
-		-v \
-		-shuffle
-
-	if [ $? -ne 0 ]
-	then
-		echo ""; echo ParaFly failed: ${in_array[$i]}; date; exit 1
-	else
-		echo ""; echo date; echo ""
-	fi
-
+	/apps/trinity/2.8.4/trinity-plugins/BIN/ParaFly -c ../SAMPLEID_trinity_out/${inArray[$i]} -CPU ${SLURM_CPUS_PER_TASK} -v -shuffle
+	flowControl "ParaFly failed: ${inArray[$i]}" "ParaFly Complete: ${inArray[$i]}"
 else
 	echo "Error: missing array index as SLURM_ARRAY_TASK_ID"
 fi

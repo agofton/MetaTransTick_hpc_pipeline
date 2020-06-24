@@ -1,13 +1,16 @@
 #!/bin/bash
 
-# script to be run on VM not pearcy - doesnt work becuse of some java error
-hm='./meg.sh -i [input blast file] -r [reads.fasta] -o [output.rma6] -l [lca.txt] -t ["nucl" or "prot"] -h [print help]'
+helpMessage() {
+	echo "$0 usage: -i <input .blast or .diamond file> -r <input reads.fasta> -t <"nucl" or "prot"> -o <output.rma6> -l <output.lca.txt> -h print this help message";
+	echo ""
+	exit 1
+}
 
 # default lca params
 maxMatchesPerRead='5000'
 minScore='100' 					# bit score
 maxExpected='0.0000000001' 		# e-value (1E-10)
-minPercentIdentity='50'
+minPercentIdentity='90'
 topPercent='10'
 minSupportPercent='0' 			# 0 = off
 minPercentReadCover='0'
@@ -20,20 +23,12 @@ while getopts hi:r:o:t:l: option
 do
 	case "${option}"
 		in
-	        h) echo ${hm}
-	           echo ""
-	           exit;;
+	        h) helpMessage;;
 	        i) blast_in=${OPTARG};;
 	        r) reads_in=${OPTARG};;
 			o) rma_out=${OPTARG};;
 			l) lca_out=${OPTARG};;
 			t) typ=${OPTARG};;
-	        :) printf "missing argument for  -%s\n" "$OPTARG" >&2
-	           echo "$usage" >&2
-	           exit 1;;
-	   	   \?) printf "illegal option: -%s\n" "$OPTARG" >&2
-	           echo "$usage" >&2
-	           exit 1;;
 	esac
 done
 shift $((OPTIND - 1))
@@ -49,21 +44,18 @@ else
 	echo 'ERROR: -t must be "prot" or "nucl"'
 fi
 
-#b2r='~/megan/tools/blast2rma'
-#
-#echo ""
-#date
-#echo ""
-#
-#~/megan/tools/blast2rma -i ${blast_in} -r ${reads_in} -o ${rma_out} \
-#	-f BlastText -bm Blast${np} \
-#	-c -m ${maxMatchesPerRead} -ms ${minScore} \
-#	-me ${maxExpected} -mpi ${minPercentIdentity} \
-#	-top ${topPercent} -supp ${minSupportPercent} \
-#	-mrc ${minPercentReadCover} -mrefc ${minPercentReferenceCover} \
-#	-alg ${lcaAlgorithm} -ram ${readAssignmentMode} \
-#	-a2t ${taxMap} -v
+echo ""
+date
+echo ""
 
+~/megan/tools/blast2rma -i ${blast_in} -r ${reads_in} -o ${rma_out} \
+	-f BlastText -bm Blast${np} \
+	-c -m ${maxMatchesPerRead} -ms ${minScore} \
+	-me ${maxExpected} -mpi ${minPercentIdentity} \
+	-top ${topPercent} -supp ${minSupportPercent} \
+	-mrc ${minPercentReadCover} -mrefc ${minPercentReferenceCover} \
+	-alg ${lcaAlgorithm} -ram ${readAssignmentMode} \
+	-a2t ${taxMap} -v
 
 date
 echo ""

@@ -1,55 +1,46 @@
 #!/bin/bash
+date
 
-#SBATCH --job-name=BlTr_SAMPLEID
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=20
-#SBATCH --time=06:00:00
-#SBATCH --output=../logs/blastN_trinity_SAMPLEID_%A.log
-#SBATCH --mem=80GB
+flowControl() {
+	if [ $? -ne 0 ]; then
+		echo $1; date; exit 1;
+	else
+		echo $2; date; echo "";
+	fi
+}
 
 module load bioref
 module load blast+/2.9.0
 
 database="/data/bioref/blast/ncbi/nt"
-in=SCRATCHDIR/SAMPLEID.trinity.fasta
-out=SCRATCHDIR/SAMPLEID.trinity.blast
+in=../SAMPLEID.trinity.fasta
+archive=../SAMPLEID.trinity.ASN.1
+outfmt0=../SAMPLEID.trinity.blast
+outfmt6=../SAMPLEID.trinity.blast.txt
+topHits=../SAMPLEID.trinity.blast.topHits.txt
 
-echo ""
-date
-echo ""
+# Blast and write blast archive .ASN.1
+blastn -task megablast -query ${in} -db ${database} -out ${out} -strand both -num_threads ${SLURM_CPUS_PER_TASK} -outfmt 11 \
+	-num_alignments 100 -num_descriptions 100 -max_hsps 5 -evalue 1e-10
+flowControl "Megablast failed: ${in}" "Megablast finished sucessfully: ${in}" 
 
-blastn \
-	-task megablast \
-	-query ${in} \
-	-db ${database} \
-	-out ${out} \
-	-strand both \
-	-num_threads ${SLURM_CPUS_PER_TASK} \
-	-outfmt 0 \
-	-num_alignments 100 \
-	-num_descriptions 100 \
-	-max_hsps 5 \
-	-evalue 1e-10
+# Write pairwise output
+blast-formatter -archive ${archive} -outfmt 0 -out ${outfmt0}
+flowControl "Writing pairwise output failed: ${outfmt0}" "Pairwise output written: ${outfmt0}" 
 
-# flow control
-if [ $? -eq 0 ]; then
-	echo ""; echo "Megablast finished sucessfully: ${in}"; date
-else
-	echo ""; echo "Megablast failed: ${in}"; date; exit 1
-fi
+# Write tabular output
+blast-formatter -archive ${archive} -out ${outfmt6} \
+	-outfmt '6 qseqid saccver stitle staxid pident length mismatch gapopen qstart qend sstart send evalue bitscore'
+flowControl "Writing tabular output failed: ${outfmt6}" "Tabular output written: ${outfmt6}" 
+
+# Writing top hits only
+cat ${outfmt6} | awk '!a[$1]++' > ${topHits}
 
 # counting number of hits
-numnohits=$(grep -c "No hits found" ${out})
+numnohits=$(grep -c "No hits found" ${outfmt0})
 numqueries=$(grep -c "^>" ${in})
 num_hits=$[numqueries-numnohits]
-
 echo "Number of reads with blast hits"
-echo "${out}: ${num_hits}"
+echo "${outfmt0}: ${num_hits}"
 
-# copying output back to hb-austicks
-cp ${out} OUTDIR/
-
-echo ""
 date
-echo ""
