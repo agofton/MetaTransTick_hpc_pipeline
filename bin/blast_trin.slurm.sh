@@ -20,7 +20,7 @@ outfmt6=../SAMPLEID.trinity.blast.txt
 topHits=../SAMPLEID.trinity.blast.topHits.txt
 
 # Blast and write blast archive .ASN.1
-blastn -task megablast -query ${in} -db ${database} -out ${out} -strand both -num_threads ${SLURM_CPUS_PER_TASK} -outfmt 11 \
+blastn -task megablast -query ${in} -db ${database} -out ${archive} -strand both -num_threads ${SLURM_CPUS_PER_TASK} -outfmt 11 \
 	-num_alignments 100 -num_descriptions 100 -max_hsps 5 -evalue 1e-10
 flowControl "Megablast failed: ${in}" "Megablast finished sucessfully: ${in}"
 
