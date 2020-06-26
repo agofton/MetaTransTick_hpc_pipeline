@@ -1,66 +1,66 @@
 #!/bin/bash
 
 # QC.slurm.sh
-	qcJobName='qcSAMPLEID' 							# must contain SAMPLEID
-	qcLog='../logs/QC_SAMPLEID_%A.slurm.log' 		# must contain SAMPLEID
-	qcNodes='1'
-	qcTasks='1'
-	qcCPUsPerTask='10'
-	qcMem='60GB'
-	qcTime='02:00:00'
+qcJobName='qcSAMPLEID' 											# must contain SAMPLEID
+qcLog='../logs/QC_SAMPLEID_%A.slurm.log' 		# must contain SAMPLEID
+qcNodes='1'
+qcTasks='1'
+qcCPUsPerTask='10'
+qcMem='60GB'
+qcTime='02:00:00'
 
 # derep.slurm.sh
-	drJobName='drSAMPLEID' 							# must contain SAMPLEID
-	drLog='../logs/dr_SAMPLEID_%A.slurm.log' 		# must contain SAMPLEID
-	drNodes='1'
-	drTasks='1'
-	drCPUsPerTask='20'
-	drMem='128GB'
-	drTime='02:00:00'
+drJobName='drSAMPLEID' 											# must contain SAMPLEID
+drLog='../logs/dr_SAMPLEID_%A.slurm.log' 		# must contain SAMPLEID
+drNodes='1'
+drTasks='1'
+drCPUsPerTask='20'
+drMem='128GB'
+drTime='02:00:00'
 
 # trinity_P1.slurm.sh
-	t1JobName='t1SAMPLEID' 							# must contain SAMPLEID
-	t1Log='../logs/trin1_SAMPLEID_%A.slurm.log'		# must contain SAMPLEID
-	t1Nodes='1'
-	t1Tasks='20'
-	t1Mem='512GB'
-	t1Time='24:00:00'
-	# no CPUs-per-task for this command
-	nChunks=10 										# number of job for Trinity Phase 2
-							
+t1JobName='t1SAMPLEID' 												# must contain SAMPLEID
+t1Log='../logs/trin1_SAMPLEID_%A.slurm.log'		# must contain SAMPLEID
+t1Nodes='1'
+t1Tasks='20'
+t1Mem='512GB'
+t1Time='24:00:00'
+nChunks=10 																		# number of job for Trinity Phase 2
+# no CPUs-per-task for this command
+
 # trinity_P2.slurm.sh
-	t2JobName='t2SAMPLEID' 							# must contain SAMPLEID
-	t2Log='../logs/trin2_SAMPLEID_%A_%a.slurm.log' 	# must contain SAMPLEID
-	t2Nodes='1'
-	t2Tasks='1'
-	t2CPUsPerTask='20'
-	t2Mem='128GB'
-	t2Time='06:00:00'
-	t2Arrays="0-$((nChunks - 1))"
+t2JobName='t2SAMPLEID' 													# must contain SAMPLEID
+t2Log='../logs/trin2_SAMPLEID_%A_%a.slurm.log' 	# must contain SAMPLEID
+t2Nodes='1'
+t2Tasks='1'
+t2CPUsPerTask='20'
+t2Mem='128GB'
+t2Time='06:00:00'
+t2Arrays="0-$((nChunks - 1))" 									# do not edit
 
 # trinity_P3.slurm.sh
-	t3JobName='t3SAMPLEID' 							# must contain SAMPLEID
-	t3Log='../logs/trin3_SAMPLEID_%A.slurm.log' 	# must contain SAMPLEIS
-	t3Nodes='1'
-	t3Tasks='1'
-	t3CPUsPerTask='1'
-	t3Mem='8GB'
-	t3Time='00:10:00'
+t3JobName='t3SAMPLEID' 												# must contain SAMPLEID
+t3Log='../logs/trin3_SAMPLEID_%A.slurm.log' 	# must contain SAMPLEIS
+t3Nodes='1'
+t3Tasks='1'
+t3CPUsPerTask='1'
+t3Mem='8GB'
+t3Time='00:10:00'
 
 # blast_trin.slurm.sh
-	blastJobName='bstSAMPLEID' 							# must contain SAMPLEID
-	blastLog='../logs/blastN_SAMPLEID_%A.slurm.log' 	# must contain SAMPLEID
-	blastNodes='1'
-	blastTasks='1'
-	blastCPUsPerTask='20'
-	blastMem='80GB'
-	blastTime='24:00:00'
+blastJobName='bstSAMPLEID' 												# must contain SAMPLEID
+blastLog='../logs/blastN_SAMPLEID_%A.slurm.log' 	# must contain SAMPLEID
+blastNodes='1'
+blastTasks='1'
+blastCPUsPerTask='20'
+blastMem='80GB'
+blastTime='24:00:00'
 
 # diam_trin.slurm.sh
-	diamJobName='diamSAMPLEID' 							# must contain SAMPLEID
-	diamLog='../logs/diamond_SAMPLEID_%A.slurm.log' 	# must contain SAMPLEID
-	diamNodes='1'
-	diamTasks='1'
-	diamCPUsPerTask='20'
-	diamMem='50GB'
-	diamTime='24:00:00'
+diamJobName='diamSAMPLEID' 												# must contain SAMPLEID
+diamLog='../logs/diamond_SAMPLEID_%A.slurm.log' 	# must contain SAMPLEID
+diamNodes='1'
+diamTasks='1'
+diamCPUsPerTask='20'
+diamMem='50GB'
+diamTime='24:00:00'
