@@ -5,7 +5,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=20
 #SBATCH --mem=128GB
-#SBATCH --time=24:00:00
+#SBATCH --time=48:00:00
 #SBATCH --output=/datasets/work/hb-austicks/work/Project_Phoenix/data/pipeline_test_1/PP-K-p10/logs/k2_%A.slurm.log
 
 date

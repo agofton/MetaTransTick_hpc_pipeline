@@ -10,7 +10,7 @@ helpMessage() {
 maxMatchesPerRead='5000'
 minScore='100' 					# bit score
 maxExpected='0.0000000001' 		# e-value (1E-10)
-minPercentIdentity='90'
+minPercentIdentity='70'
 topPercent='10'
 minSupportPercent='0' 			# 0 = off
 minPercentReadCover='0'

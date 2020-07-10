@@ -32,7 +32,7 @@ flowControl "Writing pairwise output failed: ${outfmt0}" "Pairwise output writte
 
 # Write tabular output
 blast_formatter -archive ${archive} -out ${outfmt6} \
-	-outfmt '6 qseqid saccver stitle staxid pident length mismatch gapopen qstart qend sstart send evalue bitscore'
+	-outfmt '6 qseqid ssciname saccver stitle staxid pident length mismatch gapopen qstart qend sstart send evalue bitscore'
 
 flowControl "Writing tabular output failed: ${outfmt6}" "Tabular output written: ${outfmt6}"
 
