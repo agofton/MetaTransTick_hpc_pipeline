@@ -2,6 +2,7 @@
 
 helpMessage() {
 	echo "$0 usage: -b <blast file in outfmt6 (tab separated; taxon sciname as column 2)> -o <output file> -h [show this message]>"
+	echo "This script will analyse a blast tabular output file (outfmt6) and return the species present (as top hits for each sequence), and the number and % of reads assigned to those species."
 	exit 1
 }
 

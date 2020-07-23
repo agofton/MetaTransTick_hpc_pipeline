@@ -1,52 +1,68 @@
 #!/bin/bash
 date
 
-flowControl() {
+source slurmParams.txt
+
+errorExit() {
 	if [ $? -ne 0 ]; then
 		echo $1; date; exit 1;
 	else
-		echo $2
+		echo $2; date; echo ""
 	fi
 }
 
 module load bbtools/38.37
 module load fastqc/0.11.8
 
-# input & output variables
-in1=../SAMPLEID_R1.QC.paired.fastq.gz
-in2=../SAMPLEID_R2.QC.paired.fastq.gz
-int=../SAMPLEID.derep.interleaved.fastq.gz
-out1=../SAMPLEID_R1.derep.fastq.gz
-out2=../SAMPLEID_R2.derep.fastq.gz
+# removes only optical duplicates when both R1 & R2 are identical.
+dedupe.sh \
+	in1=${trimPEr1} \
+	in2=${trimPEr2} \
+	out=${int} \
+	ac=f \
+	threads=${SLURM_CPUS_PER_TASK}
 
-# removes only optical duplicates when both R1 & R2 are identical. output is interleaved
-dedupe.sh in1=${in1} in2=${in2} out=${int} ac=f threads=${SLURM_CPUS_PER_TASK}
-flowControl "DEDUPE failed: ${in1}, ${in2}" "DEDUPE finished sucessfully: ${in1}, ${in2}"
+errorExit \
+	"dedupe.sh failed: ${trimPEr1}, ${trimPEr2}" \
+	"dedupe.sh finished sucessfully: ${trimPEr1}, ${trimPEr2}"
 
 # converts intleaved to paired
-reformat.sh in=${int} out1=${out1} out2=${out2}
-flowControl "REFORMAT failed: ${int}" "REFORMAT finished sucessfully: ${int}"
+reformat.sh \
+	in=${int} \
+	out1=${derepOut1} \
+	out2=${derepOut2}
+
+errorExit \
+	"reformat.sh failed: ${int}" \
+	"reformat.sh finished sucessfully: ${int}"
 
 # cleanup
 rm -f ${int}
 
 # fastqc on derep files
 mkdir ../fastqc_derep
-fastqc --outdir ../fastqc_derep --format fastq --threads ${SLURM_CPUS_PER_TASK} \
-	   ${out1} ${out2}
-flowControl "FASTQC failed: ${out1}, ${out2}" "FastQC finished sucessfully: ${out1}, ${out2}"
+
+fastqc \
+	--outdir ../fastqc_derep \
+	--format fastq \
+	--threads ${SLURM_CPUS_PER_TASK} \
+	${derepOut1} ${derepOut2}
+
+errorExit \
+	"FASTQC failed: ${derepOut1}, ${derepOut2}" \
+	"FastQC finished sucessfully: ${derepOut1}, ${derepOut2}"
 
 # Reporting number of reads at each step
-countIn1=$(zcat ${in1} | grep -c "^+")
-countIn2=$(zcat ${in2} | grep -c "^+")
-countOut1=$(zcat ${out1} | grep -c "^+")
-countOut2=$(zcat ${out2} | grep -c "^+")
+countIn1=$(zcat ${trimPEr1} | grep -c "^+")
+countIn2=$(zcat ${trimPEr2} | grep -c "^+")
+countOut1=$(zcat ${derepOut1} | grep -c "^+")
+countOut2=$(zcat ${derepOut2} | grep -c "^+")
 
 echo ""
 echo "# Reads in input and output"
-echo "${in1}: ${countIn1}"
-echo "${in2}: ${countIn2}"
-echo "${out1}: ${countOut1}"
-echo "${out2}: ${countOut2}"
+echo "${trimPEr1}: ${countIn1}"
+echo "${trimPEr2}: ${countIn2}"
+echo "${derepOut1}: ${countOut1}"
+echo "${derepOut2}: ${countOut2}"
 
 date

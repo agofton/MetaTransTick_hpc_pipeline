@@ -1,7 +1,9 @@
 #!/bin/bash
 date
 
-flowControl() {
+source slurmParams.txt
+
+errorExit() {
 	if [ $? -ne 0 ]; then
 		echo $1; date; exit 1
 	else
@@ -12,18 +14,36 @@ flowControl() {
 module load bioref
 module load diamond/0.9.28
 
-database=/data/bioref/diamond_db/nr_191112_v0928.dmnd #updated Nov 12 2019
-input=../SAMPLEID.trinity.fasta
-output=../SAMPLEID.trinity.dmnd
+mkdir ${diamDir}
 
-diamond blastx --threads ${SLURM_CPUS_PER_TASK} --db ${database} --out ${output} \
-	--outfmt 0 --query ${input} --strand both --max-target-seqs 100 --evalue 0.000000001 \
-	--sensitive --min-orf 80
-flowControli "Diamond failed: ${input}" "Diamond finished sucessfully: ${input}" 
+diamond blastx \
+	--threads ${SLURM_CPUS_PER_TASK} \
+	--db ${database} \
+	--out ${diamOut} \
+	--outfmt 0 \
+	--query ${trinIn} \
+	--strand both \
+	--max-target-seqs 100 \
+	--evalue 0.000000001 \
+	--sensitive \
+	--min-orf 80
+
+errorExit \
+	"diamond failed: ${trinIn}" \
+	"diamond finished sucessfully: ${trinIn}"
+
+diamond view \
+	--daa ${diamOut} \
+	--out ${diamTabOut} \
+	--outfmt '6 qseqid sscinames sseqid stitle staxids pident length mismatch gapopen qstart qend sstart send evalue bitscore'
+
+errorExit \
+	"diamond view failed: ${diamTabOut}" \
+	"diamond view complete: ${diamTabOut}"
 
 # counting number of hits
-numnohits=$(grep -c "No hits found" ${output})
-numqueries=$(grep -c "^>" ${input})
+numnohits=$(grep -c "No hits found" ${diamOut})
+numqueries=$(grep -c "^>" ${trinIn})
 num_hits=$[numqueries-numnohits]
 echo "Number of reads with diamond hits"
 echo "${out}: ${num_hits}"

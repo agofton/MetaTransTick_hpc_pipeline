@@ -1,5 +1,63 @@
 #!/bin/bash
 
+# run.sh job listing
+qc=QC.SAMPLEID.slurm.sh
+derep=derep.SAMPLEID.slurm.sh
+trinP1=trinity_P1.SAMPLEID.slurm.sh
+trinP2=trinity_P2.SAMPLEID.slurm.sh
+trinP3=trinity_P3.SAMPLEID.slurm.sh
+blastnTrin=blast_trin.SAMPLEID.slurm.sh
+diamTrin=diam_trin.SAMPLEID.slurm.sh
+concov=contig_cov.SAMPLEID.slurm.sh
+
+# QC.slurm.sh
+qcDir=../QC
+in1=../SAMPLEID_R1.fastq.gz
+in2=../SAMPLEID_R2.fastq.gz
+cutOut1=${qcDir}/SAMPLEID_R1.cutadapt.fastq.gz
+cutOut2=${qcDir}/SAMPLEID_R2.cutadapt.fastq.gz
+trimSum=${qcDir}/SAMPLEID.trimmomatic.summary
+trimPEr1=${qcDir}/SAMPLEID_R1.QC.paired.fastq.gz    # input to derep.slurm.sh
+trimUPr1=${qcDir}/SAMPLEID_R1.QC.unpaired.fastq.gz
+trimPEr2=${qcDir}/SAMPLEID_R2.QC.paired.fastq.gz    # input to derep.slurm.sh
+trimUPr2=${qcDir}/SAMPLEID_R2.QC.unpaired.fastq.gz
+
+# derep.slurm.sh
+int=${qcDir}/SAMPLEID.derep.interleaved.fastq.gz
+derepOut1=${qcDir}/SAMPLEID_R1.derep.fastq.gz            # input to trinity_P1.slurm.sh
+derepOut2=${qcDir}/SAMPLEID_R2.derep.fastq.gz            # input to trinity_P1.slurm.sh
+
+# trinity_P1.slurm.sh
+trinOutDir=../SAMPLEID_trinity_out         # input to trinity_P2.slurm.sh and trinity_P3.slurm.sh
+
+# trinity_P2.slurm.sh
+arrayFile=trinP2InputArray.txt
+
+# trinity_P3.slurm.sh - no user generated variables
+
+# blast_trin.slurm.sh
+blastDir=../blastN
+database="/data/bioref/blast/ncbi/nt"
+trinIn=../SAMPLEID.trinity.fasta        # also input for diam_trin.slurm.sh & contig_cov.slurm.sh
+archive=${blastDir}/SAMPLEID.trinity.ASN.1
+outfmt0=${blastDir}/SAMPLEID.trinity.blast
+outfmt6=${blastDir}/SAMPLEID.trinity.blast.txt
+topHits=${blastDir}/SAMPLEID.trinity.blast.topHits.txt
+
+# diam_trin.slurm.sh
+diamDir=../diamond
+database=/data/bioref/diamond_db/nr_191112_v0928.dmnd  #updated Nov 12 2019
+diamOut=${diamDir}/SAMPLEID.trinity.diamond.daa
+diamTabOut=${diamDir}/SAMPLEID.trinity.diamond.txt
+
+# contig_cov.slurm.sh
+conCovOutDir=../SAMPLEID_bwa_contig_cov
+trinFasta=../SAMPLEID.trinity.fasta
+bwaindex=${conCovOutDir}/SAMPLEID.trinity.bwaindex
+bamOut=${conCovOutDir}/SAMPLEID_bwa_out_sorted.bam
+covSum=${conCovOutDir}/SAMPLEID_coverage_map.txt
+
+################# SLURM PARAMETERS #############################################
 # QC.slurm.sh
 qcJobName='qcSAMPLEID' 											# must contain SAMPLEID
 qcLog='../logs/QC_SAMPLEID_%A.slurm.log' 		# must contain SAMPLEID
@@ -64,3 +122,12 @@ diamTasks='1'
 diamCPUsPerTask='20'
 diamMem='50GB'
 diamTime='24:00:00'
+
+# contig_cov.slurm.sh
+concovJobName='concovSAMPLEID' 												# must contain SAMPLEID
+concovLog='../logs/contig_coverage_SAMPLEID_%A.slurm.log' 	# must contain SAMPLEID
+concovNodes='1'
+concovTasks='1'
+concovCPUsPerTask='20'
+concovMem='128GB'
+concovTime='24:00:00'

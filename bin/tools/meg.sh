@@ -6,29 +6,38 @@ helpMessage() {
 	exit 1
 }
 
-# default lca params
+errorExit() {
+	if [ $? -ne 0 ]; then
+		echo $1; date; exit 1
+	else
+		echo $2; date; echo ""
+	fi
+}
+
+# lca params
 maxMatchesPerRead='5000'
-minScore='100' 					# bit score
+minScore='200' 								# bit score
 maxExpected='0.0000000001' 		# e-value (1E-10)
-minPercentIdentity='70'
+minPercentIdentity='80'
 topPercent='10'
-minSupportPercent='0' 			# 0 = off
+#minSupportPercent='0' 				# 0 = off
+minSupport='2' 								# no singletons
 minPercentReadCover='0'
-minPercentReferenceCover='0'
-lcaAlgorithm='naive' 			# "naive", "weighted", "longReads"
-readAssignmentMode='readCount' 	
+minPercentReferenceCover='50.0'
+lcaAlgorithm='weighted' 					# "naive", "weighted", "longReads"
+readAssignmentMode='readCount'
 
 # Command line arguments
 while getopts hi:r:o:t:l: option
 do
 	case "${option}"
 		in
-	        h) helpMessage;;
-	        i) blast_in=${OPTARG};;
-	        r) reads_in=${OPTARG};;
-			o) rma_out=${OPTARG};;
-			l) lca_out=${OPTARG};;
-			t) typ=${OPTARG};;
+		h) helpMessage;;
+	  i) blast_in=${OPTARG};;
+	  r) reads_in=${OPTARG};;
+		o) rma_out=${OPTARG};;
+		l) lca_out=${OPTARG};;
+		t) typ=${OPTARG};;
 	esac
 done
 shift $((OPTIND - 1))
@@ -44,25 +53,47 @@ else
 	echo 'ERROR: -t must be "prot" or "nucl"'
 fi
 
-echo ""
 date
-echo ""
 
-~/megan/tools/blast2rma -i ${blast_in} -r ${reads_in} -o ${rma_out} \
-	-f BlastText -bm Blast${np} \
-	-c -m ${maxMatchesPerRead} -ms ${minScore} \
-	-me ${maxExpected} -mpi ${minPercentIdentity} \
-	-top ${topPercent} -supp ${minSupportPercent} \
-	-mrc ${minPercentReadCover} -mrefc ${minPercentReferenceCover} \
-	-alg ${lcaAlgorithm} -ram ${readAssignmentMode} \
-	-a2t ${taxMap} -v
+~/megan/tools/blast2rma \
+	-i ${blast_in} \
+	-r ${reads_in} \
+	-o ${rma_out} \
+	-f BlastText \
+	-bm Blast${np} \
+	-c \
+	-m ${maxMatchesPerRead} \
+	-ms ${minScore} \
+	-me ${maxExpected} \
+	-mpi ${minPercentIdentity} \
+	-top ${topPercent} \
+	-sup ${minSupport} \
+	-mrc ${minPercentReadCover} \
+	-mrefc ${minPercentReferenceCover} \
+	-alg ${lcaAlgorithm} \
+	-ram ${readAssignmentMode} \
+	-a2t ${taxMap} \
+	-v
 
-date
-echo ""
+errorExit \
+	"blast2rma failed ..." \
+	"blast2rma complete ..."
 
-~/megan/tools/blast2lca -i ${blast_in} -f BlastText -m Blast${np} -o ${lca_out} \
-	  -sr -oro -ms ${minScore} -me ${maxExpected} -top ${topPercent} \
-	 -mid ${minPercentIdentity} -tn -a2t ${taxMap} -v
+~/megan/tools/blast2lca \
+	-i ${blast_in} \
+	-f BlastText \
+	-m Blast${np} \
+	-o ${lca_out} \
+	-sr \
+	-oro \
+	-ms ${minScore} \
+	-me ${maxExpected} \
+	-top ${topPercent} \
+	-mid ${minPercentIdentity} \
+	-tn \
+	-a2t ${taxMap} \
+	-v
 
-echo ""
-date
+errorExit \
+	"blast2lca failed ..." \
+	"blast2lca complete ..."

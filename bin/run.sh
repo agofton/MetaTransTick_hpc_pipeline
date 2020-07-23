@@ -1,10 +1,12 @@
 #!/bin/bash
 date
 
+source slurmParams.txt
+
 helpMessage() {
-	echo "$0 usage: -m <all, derep, trinityP1, trinityP2, trinityP3, blast+diamond, onlyQC, onlyDerep, onlyTrinity, onlyTrinityP1, onlyTrinityP2, onlyTrinityP3, onlyBlast, onlyDiamond> -h [show this message]"
+	echo "$0 usage: -m <all, derep, trinityP1, trinityP2, trinityP3, blast+diamond, onlyQC, onlyDerep, onlyTrinity, onlyTrinityP1, onlyTrinityP2, onlyTrinityP3, onlyBlast, onlyDiamond, onlyConCov> -h [show this message]"
 	echo 'Running with -m flags "all", "derep",  "trinityP1", "trinityP2", "trinityP3", or "blast+diamond" will start the pipeline at that step and then run to the end.'
-	echo 'Running with -m flags "onlyQC", "onlyDerep",  "onlyTrinityP1", "onlyTrinityP2", "onlyTrinityP3", "onlyBlast" or "onlyDiamond" will run only that module.'
+	echo 'Running with -m flags "onlyQC", "onlyDerep",  "onlyTrinityP1", "onlyTrinityP2", "onlyTrinityP3", "onlyBlast", "onlyDiamond", or "onlyConCov" will run only that module.'
 }
 
 flowControl() {
@@ -13,17 +15,6 @@ flowControl() {
 		echo $1; date; exit 1
 	fi
 }
-
-source slurmParams.txt && flowControl "Cannot source variables from ./slurmParams.txt. File does not exits."
-
-# job listing
-qc=QC.SAMPLEID.slurm.sh
-derep=derep.SAMPLEID.slurm.sh
-trinP1=trinity_P1.SAMPLEID.slurm.sh
-trinP2=trinity_P2.SAMPLEID.slurm.sh
-trinP3=trinity_P3.SAMPLEID.slurm.sh
-blastnTrin=blast_trin.SAMPLEID.slurm.sh
-diamTrin=diam_trin.SAMPLEID.slurm.sh
 
 # Command line arguments
 while getopts "hm:" OPTION
@@ -38,6 +29,7 @@ shift $((OPTIND - 1))
 
 # define job options
 all() {
+	echo ""
 	echo "Running work flow steps QC, Dereplication, Trinity phase 1, Trinity phase 2, Trinity phase 3, blast, and diamond."
 	echo ""
 	# QC - no dependency
@@ -82,9 +74,16 @@ all() {
 			echo "Job 7: Diamond blastX to nr; ${diamTrin} queued with jobid=${job7ID}."
 			echo "${diamTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
+	# calculate contig coverage
+	job8=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
+			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job8ID}."
+			echo "${concov} will begin after successfull completion of ${trinP3}."
+			echo ""
 }
 
 derep() {
+	echo ""
 	echo "Running work flow steps Dereplication, Trinity phase 1, Trinity phase 2, Trinity phase 3, blast, and diamond."
 	echo ""
 	# derep - no dependency
@@ -123,9 +122,16 @@ derep() {
 			echo "Job 7: Diamond blastX to nr; ${diamTrin} queued with jobid=${job7ID}."
 			echo "${diamTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
+	# calculate contig coverage
+	job8=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
+			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job8ID}."
+			echo "${concov} will begin after successfull completion of ${trinP3}."
+			echo ""
 }
 
 trinityP1() {
+	echo ""
 	echo "Running work flow steps Trinity phase 1, Trinity phase 2, Trinity phase 3, blast, and diamond."
 	echo ""
 	# trinity phase 1 - no dependency
@@ -158,9 +164,15 @@ trinityP1() {
 			echo "Job 7: Diamond blastX to nr; ${diamTrin} queued with jobid=${job7ID}."
 			echo "${diamTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
+	job8=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
+			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job8ID}."
+			echo "${concov} will begin after successfull completion of ${trinP3}."
+			echo ""
 }
 
 trinityP2() {
+	echo ""
 	echo "Running work flow steps Trinity phase 2, Trinity phase 3, blast, and diamond."
 	echo ""
 	# trinity phase 2 - no dependency
@@ -187,9 +199,15 @@ trinityP2() {
 			echo "Job 7: Diamond blastX to nr; ${diamTrin} queued with jobid=${job7ID}."
 			echo "${diamTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
+	job8=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
+			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job8ID}."
+			echo "${concov} will begin after successfull completion of ${trinP3}."
+			echo ""
 }
 
 trinityP3() {
+	echo ""
 	echo "Running work flow steps Trinity phase 3, blast, and diamond."
 	echo ""
 	# trinity phase 3 - no dependency
@@ -210,9 +228,15 @@ trinityP3() {
 			echo "Job 7: Diamond blastX to nr; ${diamTrin} queued with jobid=${job7ID}."
 			echo "${diamTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
+	job8=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
+			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job8ID}."
+			echo "${concov} will begin after successfull completion of ${trinP3}."
+			echo ""
 }
 
 blast+diamond() {
+	echo ""
 	echo "Running work flow steps blast, diamond."
 	echo ""
 	# blast - no dependency
@@ -230,6 +254,7 @@ blast+diamond() {
 }
 
 onlyQC() {
+	echo ""
 	echo "Running work flow step: QC."
 	echo ""
 	# QC - no dependency
@@ -241,6 +266,7 @@ onlyQC() {
 }
 
 onlyDerep() {
+	echo ""
 	echo "Running work flow step: Dereplication."
 	echo ""
 	# derep - no dependency
@@ -252,6 +278,7 @@ onlyDerep() {
 }
 
 onlyTrinity() {
+	echo ""
 	echo "Running work flow steps: Trinity phase 1, Trinity phase 2, Trinity phase 3."
 	echo ""
 	# trinity phase 1 - no dependency
@@ -275,6 +302,7 @@ onlyTrinity() {
 }
 
 onlyTrinityP1() {
+	echo ""
 	echo "Running work flow step: Trinity phase 1."
 	echo ""
 	# trinity phase 1 - no dependency
@@ -286,6 +314,7 @@ onlyTrinityP1() {
 }
 
 onlyTrinityP2() {
+	echo ""
 	echo "Running work flow step: Trinity phase 2."
 	echo ""
 	# trinity phase 2 - no dependency
@@ -297,6 +326,7 @@ onlyTrinityP2() {
 }
 
 onlyTrinityP3() {
+	echo ""
 	echo "Running work flow step: Trinity phase 3."
 	echo ""
 	# trinity phase 3 - no dependency
@@ -308,6 +338,7 @@ onlyTrinityP3() {
 }
 
 onlyBlast() {
+	echo ""
 	echo "Running work flow step: BlastN."
 	echo ""
 	# blast - no dependency
@@ -319,6 +350,7 @@ onlyBlast() {
 }
 
 onlyDiamond() {
+	echo ""
 	echo "Running work flow step: Diamond (blastX)."
 	echo ""
 	# diamond - no dependency
@@ -329,7 +361,19 @@ onlyDiamond() {
 			echo ""
 }
 
-# logic for running different modules
+onlyConCov() {
+	echo ""
+	echo "Running work flow step: Contig Coverage (bwa + samtools)."
+	echo ""
+job8=$(sbatch -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
+		echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job8ID}."
+		echo "${concov} will begin after successfull completion of ${trinP3}."
+		echo ""
+}
+
+
+# logic for running modules
 if [[ "${module}" == "all" ]]; then
 	all
 elif [[ "${module}" == "derep" ]]; then
@@ -358,8 +402,10 @@ elif [[ "${module}" == "onlyBlast" ]]; then
 	onlyBlast
 elif [[ "${module}" == "onlyDiamond" ]]; then
 	onlyDiamond
+elif [[ "${module}" == "onlyConCov" ]]; then
+	onlyConCov
 else
-	echo '-m <module> not an accepted value. Options are "all", "derep", "trinityP1", "trinityP2", "trinityP3", "blast+diamond", "onlyQC", "onlyDerep", "onlyTrinirt", "onlyTrinityP1", "onlyTrinityP2", "onlyTrinityP3", "onlyBlast", "onlyDiamond"'
+	echo '-m <module> not an accepted value. Options are "all", "derep", "trinityP1", "trinityP2", "trinityP3", "blast+diamond", "onlyQC", "onlyDerep", "onlyTrinirt", "onlyTrinityP1", "onlyTrinityP2", "onlyTrinityP3", "onlyBlast", "onlyDiamond", "onlyConCov"'
 	date
 	exit 1
 fi
