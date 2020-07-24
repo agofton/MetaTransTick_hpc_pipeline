@@ -30,7 +30,7 @@ shift $((OPTIND - 1))
 # define job options
 all() {
 	echo ""
-	echo "Running work flow steps QC, Dereplication, Trinity phase 1, Trinity phase 2, Trinity phase 3, blast, and diamond."
+	echo "Running work flow steps QC, Dereplication, Trinity phase 1, Trinity phase 2, Trinity phase 3, blast, diamond, & contig coverage."
 	echo ""
 	# QC - no dependency
 	job1=$(sbatch -J ${qcJobName} -N ${qcNodes} -n ${qcTasks} -c ${qcCPUsPerTask} -t ${qcTime} --mem ${qcMem} -o ${qcLog} ${qc})
@@ -84,7 +84,7 @@ all() {
 
 derep() {
 	echo ""
-	echo "Running work flow steps Dereplication, Trinity phase 1, Trinity phase 2, Trinity phase 3, blast, and diamond."
+	echo "Running work flow steps Dereplication, Trinity phase 1, Trinity phase 2, Trinity phase 3, blast, diamond, & contig coverage."
 	echo ""
 	# derep - no dependency
 	job2=$(sbatch -J ${drJobName} -N ${drNodes} -n ${drTasks} -c ${drCPUsPerTask} -t ${drTime} --mem ${drMem} -o ${drLog} ${derep})
@@ -132,7 +132,7 @@ derep() {
 
 trinityP1() {
 	echo ""
-	echo "Running work flow steps Trinity phase 1, Trinity phase 2, Trinity phase 3, blast, and diamond."
+	echo "Running work flow steps Trinity phase 1, Trinity phase 2, Trinity phase 3, blast, diamond, & contig coverage."
 	echo ""
 	# trinity phase 1 - no dependency
 	job3=$(sbatch -J ${t1JobName} -N ${t1Nodes} -n ${t1Tasks} -t ${t1Time} --mem ${t1Mem} -o ${t1Log} ${trinP1})
@@ -173,7 +173,7 @@ trinityP1() {
 
 trinityP2() {
 	echo ""
-	echo "Running work flow steps Trinity phase 2, Trinity phase 3, blast, and diamond."
+	echo "Running work flow steps Trinity phase 2, Trinity phase 3, blast, diamond, & contig coverage."
 	echo ""
 	# trinity phase 2 - no dependency
 	job4=$(sbatch -J ${t2JobName} -N ${t2Nodes} -n ${t2Tasks} -c ${t2CPUsPerTask} -t ${t2Time} --mem ${t2Mem} -o ${t2Log} -a ${t2Arrays} ${trinP2})
@@ -208,7 +208,7 @@ trinityP2() {
 
 trinityP3() {
 	echo ""
-	echo "Running work flow steps Trinity phase 3, blast, and diamond."
+	echo "Running work flow steps Trinity phase 3, blast, diamond, & contig coverage."
 	echo ""
 	# trinity phase 3 - no dependency
 	job5=$(sbatch -J ${t3JobName} -N ${t3Nodes} -n ${t3Tasks} -c ${t3CPUsPerTask} -t ${t3Time} --mem ${t3Mem} -o ${t3Log} ${trinP3})
@@ -237,7 +237,7 @@ trinityP3() {
 
 blast+diamond() {
 	echo ""
-	echo "Running work flow steps blast, diamond."
+	echo "Running work flow steps blast, diamond, & contig coverage."
 	echo ""
 	# blast - no dependency
 	job6=$(sbatch -J ${blastJobName} -N ${blastNodes} -n ${blastTasks} -c ${blastCPUsPerTask} -t ${blastTime} --mem ${blastMem} -o ${blastLog} ${blastnTrin})
