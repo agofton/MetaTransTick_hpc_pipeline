@@ -26,6 +26,7 @@ trimUPr2=${qcDir}/SAMPLEID_R2.QC.unpaired.fastq.gz
 int=${qcDir}/SAMPLEID.derep.interleaved.fastq.gz
 derepOut1=${qcDir}/SAMPLEID_R1.derep.fastq.gz            # input to trinity_P1.slurm.sh
 derepOut2=${qcDir}/SAMPLEID_R2.derep.fastq.gz            # input to trinity_P1.slurm.sh
+drepFQCoutDir=${qcDir}/fastqc_derep
 
 # trinity_P1.slurm.sh
 trinOutDir=../SAMPLEID_trinity_out         # input to trinity_P2.slurm.sh and trinity_P3.slurm.sh
@@ -34,10 +35,12 @@ trinOutDir=../SAMPLEID_trinity_out         # input to trinity_P2.slurm.sh and tr
 arrayFile=trinP2InputArray.txt
 
 # trinity_P3.slurm.sh - no user generated variables
+trinFasta=../SAMPLEID.trinity.fasta
+id=SAMPLEID
 
 # blast_trin.slurm.sh
 blastDir=../blastN
-database="/data/bioref/blast/ncbi/nt"
+database_nt="/data/bioref/blast/ncbi/nt"
 trinIn=../SAMPLEID.trinity.fasta        # also input for diam_trin.slurm.sh & contig_cov.slurm.sh
 archive=${blastDir}/SAMPLEID.trinity.ASN.1
 outfmt0=${blastDir}/SAMPLEID.trinity.blast
@@ -46,7 +49,7 @@ topHits=${blastDir}/SAMPLEID.trinity.blast.topHits.txt
 
 # diam_trin.slurm.sh
 diamDir=../diamond
-database=/data/bioref/diamond_db/nr_191112_v0928.dmnd  #updated Nov 12 2019
+database_nr=/data/bioref/diamond_db/nr_191112_v0928.dmnd  #updated Nov 12 2019
 diamOut=${diamDir}/SAMPLEID.trinity.diamond.daa
 diamTabOut=${diamDir}/SAMPLEID.trinity.diamond.txt
 
@@ -63,9 +66,9 @@ qcJobName='qcSAMPLEID' 											# must contain SAMPLEID
 qcLog='../logs/QC_SAMPLEID_%A.slurm.log' 		# must contain SAMPLEID
 qcNodes='1'
 qcTasks='1'
-qcCPUsPerTask='10'
-qcMem='60GB'
-qcTime='02:00:00'
+qcCPUsPerTask='20'
+qcMem='120GB'
+qcTime='06:00:00'
 
 # derep.slurm.sh
 drJobName='drSAMPLEID' 											# must contain SAMPLEID
@@ -73,8 +76,8 @@ drLog='../logs/dr_SAMPLEID_%A.slurm.log' 		# must contain SAMPLEID
 drNodes='1'
 drTasks='1'
 drCPUsPerTask='20'
-drMem='128GB'
-drTime='02:00:00'
+drMem='512GB'
+drTime='12:00:00'
 
 # trinity_P1.slurm.sh
 t1JobName='t1SAMPLEID' 												# must contain SAMPLEID
@@ -82,7 +85,7 @@ t1Log='../logs/trin1_SAMPLEID_%A.slurm.log'		# must contain SAMPLEID
 t1Nodes='1'
 t1Tasks='20'
 t1Mem='512GB'
-t1Time='24:00:00'
+t1Time='72:00:00'
 nChunks=10 																		# number of job for Trinity Phase 2
 # no CPUs-per-task for this command
 
@@ -93,7 +96,7 @@ t2Nodes='1'
 t2Tasks='1'
 t2CPUsPerTask='20'
 t2Mem='128GB'
-t2Time='06:00:00'
+t2Time='24:00:00'
 t2Arrays="0-$((nChunks - 1))" 									# do not edit
 
 # trinity_P3.slurm.sh
@@ -102,29 +105,29 @@ t3Log='../logs/trin3_SAMPLEID_%A.slurm.log' 	# must contain SAMPLEIS
 t3Nodes='1'
 t3Tasks='1'
 t3CPUsPerTask='1'
-t3Mem='8GB'
-t3Time='00:10:00'
+t3Mem='16GB'
+t3Time='12:00:00'
 
 # blast_trin.slurm.sh
-blastJobName='bstSAMPLEID' 												# must contain SAMPLEID
+blastJobName='bnSAMPLEID' 												# must contain SAMPLEID
 blastLog='../logs/blastN_SAMPLEID_%A.slurm.log' 	# must contain SAMPLEID
 blastNodes='1'
 blastTasks='1'
 blastCPUsPerTask='20'
-blastMem='80GB'
-blastTime='24:00:00'
+blastMem='100GB'
+blastTime='48:00:00'
 
 # diam_trin.slurm.sh
-diamJobName='diamSAMPLEID' 												# must contain SAMPLEID
+diamJobName='bxSAMPLEID' 												# must contain SAMPLEID
 diamLog='../logs/diamond_SAMPLEID_%A.slurm.log' 	# must contain SAMPLEID
 diamNodes='1'
 diamTasks='1'
 diamCPUsPerTask='20'
-diamMem='50GB'
-diamTime='24:00:00'
+diamMem='100GB'
+diamTime='48:00:00'
 
 # contig_cov.slurm.sh
-concovJobName='concovSAMPLEID' 												# must contain SAMPLEID
+concovJobName='ccovSAMPLEID' 												# must contain SAMPLEID
 concovLog='../logs/contig_coverage_SAMPLEID_%A.slurm.log' 	# must contain SAMPLEID
 concovNodes='1'
 concovTasks='1'

@@ -20,7 +20,7 @@ mkdir ${blastDir}
 blastn \
 	-task megablast \
 	-query ${trinIn} \
-	-db ${database} \
+	-db ${database_nt} \
 	-out ${archive} \
 	-strand both \
 	-num_threads ${SLURM_CPUS_PER_TASK} \

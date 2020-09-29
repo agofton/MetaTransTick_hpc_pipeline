@@ -40,10 +40,10 @@ errorExit \
 rm -f ${int}
 
 # fastqc on derep files
-mkdir ../fastqc_derep
+mkdir ${derepFQCoutDir}
 
 fastqc \
-	--outdir ../fastqc_derep \
+	--outdir ${derepFQCoutDir} \
 	--format fastq \
 	--threads ${SLURM_CPUS_PER_TASK} \
 	${derepOut1} ${derepOut2}

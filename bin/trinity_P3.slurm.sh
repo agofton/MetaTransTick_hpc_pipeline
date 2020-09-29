@@ -35,19 +35,19 @@ errorExit "mv failed."
 errorExit "trans_map.pl failed."
 
 # Move file to final destiation
-mv ${trinOutDir}.Trinity.fasta ../SAMPLEID.trinity.fasta
+mv ${trinOutDir}.Trinity.fasta ${trinFasta}
 
 errorExit "mv failed."
 
 # Add sampleID preflix to each transcript
-sed -i 's/>TRINITY/>SAMPLEID_TRINITY/g' ../SAMPLEID.trinity.fasta
+sed -i s/>TRINITY/>${id}_TRINITY/g ${trinFasta}
 
 errorExit "sed failed."
 
 # Counting transcipts
-count=$(grep -c "^>" ../SAMPLEID.trinity.fasta)
+count=$(grep -c "^>" ${trinFasta})
 echo "Number of transcripts."
-echo "../SAMPLEID.trinity.fasta: ${count}"
+echo "${trinFasta}: ${count}"
 
 # sign off
 echo "Trinity completed successfully."

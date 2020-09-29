@@ -16,15 +16,15 @@ errorExit() {
 
 # lca params
 maxMatchesPerRead='5000'
-minScore='200' 								# bit score
+minScore='500' 					# bit score
 maxExpected='0.0000000001' 		# e-value (1E-10)
-minPercentIdentity='80'
+minPercentIdentity='90'
 topPercent='10'
-#minSupportPercent='0' 				# 0 = off
-minSupport='2' 								# no singletons
+#minSupportPercent='0' 			# 0 = off
+minSupport='2' 					# no singletons
 minPercentReadCover='0'
 minPercentReferenceCover='50.0'
-lcaAlgorithm='weighted' 					# "naive", "weighted", "longReads"
+lcaAlgorithm='weighted' 		# "naive", "weighted", "longReads"
 readAssignmentMode='readCount'
 
 # Command line arguments

@@ -18,7 +18,7 @@ mkdir ${diamDir}
 
 diamond blastx \
 	--threads ${SLURM_CPUS_PER_TASK} \
-	--db ${database} \
+	--db ${database_nr} \
 	--out ${diamOut} \
 	--outfmt 0 \
 	--query ${trinIn} \
