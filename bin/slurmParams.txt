@@ -26,7 +26,7 @@ trimUPr2=${qcDir}/SAMPLEID_R2.QC.unpaired.fastq.gz
 int=${qcDir}/SAMPLEID.derep.interleaved.fastq.gz
 derepOut1=${qcDir}/SAMPLEID_R1.derep.fastq.gz            # input to trinity_P1.slurm.sh
 derepOut2=${qcDir}/SAMPLEID_R2.derep.fastq.gz            # input to trinity_P1.slurm.sh
-drepFQCoutDir=${qcDir}/fastqc_derep
+derepFQCoutDir=${qcDir}/fastqc_derep
 
 # trinity_P1.slurm.sh
 trinOutDir=../SAMPLEID_trinity_out         # input to trinity_P2.slurm.sh and trinity_P3.slurm.sh
