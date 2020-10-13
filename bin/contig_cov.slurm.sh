@@ -44,3 +44,7 @@ samtools coverage ${bamOut} > ${covSum}
 errorExit \
 	"Error generating coverage summary with samtools coverage ..." \
 	"Coverage summary complete."
+
+
+# do TPM calcs
+./tools/TPM_calc ${covSum}

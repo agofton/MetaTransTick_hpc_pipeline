@@ -1,7 +1,7 @@
 #!/bin/bash
 
 helpMessage() {
-	echo "$0 usage: -i <input .blast or .diamond file> -r <input reads.fasta> -t <"nucl" or "prot"> -o <output.rma6> -l <output.lca.txt> -h print this help message";
+	echo "$0 usage: -i <input .daa file> -t <"nucl" or "prot"> -o <output.rma6> -h print this help message";
 	echo ""
 	exit 1
 }
@@ -23,20 +23,18 @@ topPercent='10'
 #minSupportPercent='0' 			# 0 = off
 minSupport='2' 					# no singletons
 minPercentReadCover='0'
-minPercentReferenceCover='50.0'
+#minPercentReferenceCover='50.0'
 lcaAlgorithm='weighted' 		# "naive", "weighted", "longReads"
 readAssignmentMode='readCount'
 
 # Command line arguments
-while getopts hi:r:o:t:l: option
+while getopts hi:o:t: option
 do
 	case "${option}"
 		in
 		h) helpMessage;;
-	  i) blast_in=${OPTARG};;
-	  r) reads_in=${OPTARG};;
+        i) blast_in=${OPTARG};;
 		o) rma_out=${OPTARG};;
-		l) lca_out=${OPTARG};;
 		t) typ=${OPTARG};;
 	esac
 done
@@ -55,12 +53,9 @@ fi
 
 date
 
-~/megan/tools/blast2rma \
+~/megan/tools/daa2rma \
 	-i ${blast_in} \
-	-r ${reads_in} \
 	-o ${rma_out} \
-	-f BlastText \
-	-bm Blast${np} \
 	-c \
 	-m ${maxMatchesPerRead} \
 	-ms ${minScore} \
@@ -69,7 +64,6 @@ date
 	-top ${topPercent} \
 	-sup ${minSupport} \
 	-mrc ${minPercentReadCover} \
-	-mrefc ${minPercentReferenceCover} \
 	-alg ${lcaAlgorithm} \
 	-ram ${readAssignmentMode} \
 	-a2t ${taxMap} \
@@ -79,21 +73,4 @@ errorExit \
 	"blast2rma failed ..." \
 	"blast2rma complete ..."
 
-~/megan/tools/blast2lca \
-	-i ${blast_in} \
-	-f BlastText \
-	-m Blast${np} \
-	-o ${lca_out} \
-	-sr \
-	-oro \
-	-ms ${minScore} \
-	-me ${maxExpected} \
-	-top ${topPercent} \
-	-mid ${minPercentIdentity} \
-	-tn \
-	-a2t ${taxMap} \
-	-v
-
-errorExit \
-	"blast2lca failed ..." \
-	"blast2lca complete ..."
+date

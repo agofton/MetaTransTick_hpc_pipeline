@@ -1,7 +1,7 @@
 #!/bin/bash
 
 helpMessage() {
-	echo "$0 usage: -i <trinity output directory> -h [show this message]"
+	echo "$0 usage: -i <trinity output directory> -s <sampleID> -h [show this message]"
 	echo ""
 	exit 1
 }
@@ -21,6 +21,7 @@ do
 		in
 		h) helpMessage;; 
 		i) inputDir=${OPTARG};;
+		s) sampleID=${OPTARG};;
 	esac
 done
 shift $((OPTIND - 1))
@@ -31,11 +32,20 @@ find ${inputDir}/read_partitions/ -name '*inity.fasta' | \
 		--token_prefix TRINITY_DN \
 		--output_prefix ${inputDir}/Trinity.tmp
 
-mv ${inputDir}/Trinity.tmp.fasta ${inputDir}/${inputDir}.Trinity.fasta
+errorExit \
+	"FIND complete, all trinity assemblies found and coalated :)" \
+	"FIND failed :("
 
-sed -i s/>TRINITY/>${sampleID}_TRINITY/g ${inputDir}/${inputDir}.Trinity.fasta
+cd ${inputDir}
+mv Trinity.tmp.fasta ../${sampleID}.trinity.fasta
 
-# Counting transcipts
-count=$(grep -c "^>" ${inputDir}/${sampleID}.Trinity.fasta)
-echo "Number of transcripts."
-echo "${inputDir}/${sampleID}.Trinity.fasta: ${count}"
+errorExit \
+	"Trinity.fasta moved to its final resting place :)" \
+	"MV failed :("
+
+sed -i "s@TRINITY@${sampleID}_TRINITY@g" ../${sampleID}.trinity.fasta
+
+errorExit \
+	"SED complete." \
+	"SED failed, trinity.fasta does not have sampleIDs"
+date

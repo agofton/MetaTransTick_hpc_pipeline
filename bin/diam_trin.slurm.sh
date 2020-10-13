@@ -20,7 +20,7 @@ diamond blastx \
 	--threads ${SLURM_CPUS_PER_TASK} \
 	--db ${database_nr} \
 	--out ${diamOut} \
-	--outfmt 0 \
+	--outfmt 100 \
 	--query ${trinIn} \
 	--strand both \
 	--max-target-seqs 100 \
@@ -35,7 +35,7 @@ errorExit \
 diamond view \
 	--daa ${diamOut} \
 	--out ${diamTabOut} \
-	--outfmt '6 qseqid sscinames sseqid stitle staxids pident length mismatch gapopen qstart qend sstart send evalue bitscore'
+	--outfmt 6 qseqid sscinames sseqid stitle staxids pident length mismatch gapopen qstart qend sstart send evalue bitscore
 
 errorExit \
 	"diamond view failed: ${diamTabOut}" \
