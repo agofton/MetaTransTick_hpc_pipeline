@@ -11,9 +11,9 @@ errorExit() {
 	fi
 }
 
-module load trinity/2.8.4
+module load trinity/2.11.0
 module load perl
-module load bowtie/2.2.9
+module load bowtie/2.3.4
 
 export OMP_NUM_THREADS=${SLURM_NTASKS}
 

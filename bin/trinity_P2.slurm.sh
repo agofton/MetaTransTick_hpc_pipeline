@@ -10,7 +10,7 @@ errorExit() {
 	fi
 }
 
-module load trinity/2.8.4
+module load trinity/2.11.0
 
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
 

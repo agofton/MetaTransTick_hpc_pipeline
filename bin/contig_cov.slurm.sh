@@ -47,4 +47,8 @@ errorExit \
 
 
 # do TPM calcs
-./tools/TPM_calc ${covSum}
+./tools/TPM_calc.R ${covSum}
+
+errorExit \
+	"Error calculating TPM " \
+	"TPM calculation complete."

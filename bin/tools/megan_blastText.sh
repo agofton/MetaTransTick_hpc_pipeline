@@ -1,7 +1,7 @@
 #!/bin/bash
 
 helpMessage() {
-	echo "$0 usage: -i <input .blast or .diamond file> -r <input reads.fasta> -t <"nucl" or "prot"> -o <output.rma6> -l <output.lca.txt> -h print this help message";
+	echo "$0 usage: -i <input .blast or .diamond file> -r <input reads.fasta> -t <"nucl" or "prot"> -o <output.rma6> -h print this help message";
 	echo ""
 	exit 1
 }
@@ -28,15 +28,14 @@ lcaAlgorithm='weighted' 		# "naive", "weighted", "longReads"
 readAssignmentMode='readCount'
 
 # Command line arguments
-while getopts hi:r:o:t:l: option
+while getopts hi:r:o:t: option
 do
 	case "${option}"
 		in
 		h) helpMessage;;
-	  i) blast_in=${OPTARG};;
-	  r) reads_in=${OPTARG};;
+	    i) blast_in=${OPTARG};;
+        r) reads_in=${OPTARG};;
 		o) rma_out=${OPTARG};;
-		l) lca_out=${OPTARG};;
 		t) typ=${OPTARG};;
 	esac
 done

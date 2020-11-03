@@ -16,9 +16,9 @@ errorExit() {
 
 # lca params
 maxMatchesPerRead='5000'
-minScore='500' 					# bit score
+#minScore=100 					# bit score
 maxExpected='0.0000000001' 		# e-value (1E-10)
-minPercentIdentity='90'
+minPercentIdentity=70
 topPercent='10'
 #minSupportPercent='0' 			# 0 = off
 minSupport='2' 					# no singletons
@@ -58,7 +58,6 @@ date
 	-o ${rma_out} \
 	-c \
 	-m ${maxMatchesPerRead} \
-	-ms ${minScore} \
 	-me ${maxExpected} \
 	-mpi ${minPercentIdentity} \
 	-top ${topPercent} \

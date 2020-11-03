@@ -9,16 +9,17 @@ errorExit() {
 	fi
 }
 
-module load trinity/2.8.4
+module load trinity/2.11.0
 
 export OMP_NUM_THREADS=1 	# Shouldn't ever need more than this
 
-######################################################################################## These steps (except the last sed command) are taken directly from the normal Trinity workflow. #
-#######################################################################################
+################################################################################################ 
+# These steps (except the last sed command) are taken directly from the normal Trinity workflow. 
+################################################################################################
 
 # Find and agregate all final assemblies
 find ${trinOutDir}/read_partitions/ -name '*inity.fasta' | \
-	/apps/trinity/2.8.4/util/support_scripts/partitioned_trinity_aggregator.pl \
+	/apps/trinity/2.11.0/util/support_scripts/partitioned_trinity_aggregator.pl \
 	--token_prefix TRINITY_DN --output_prefix ${trinOutDir}/Trinity.tmp
 
 errorExit "find failed."
@@ -29,7 +30,7 @@ mv ${trinOutDir}/Trinity.tmp.fasta ${trinOutDir}.Trinity.fasta
 errorExit "mv failed."
 
 # Create gene-transcript map
-/apps/trinity/2.8.4/util/support_scripts/get_Trinity_gene_to_trans_map.pl \
+/apps/trinity/2.11.0/util/support_scripts/get_Trinity_gene_to_trans_map.pl \
 	${trinOutDir}.Trinity.fasta > ${trinOutDir}.Trinity.fasta.gene_trans_map
 
 errorExit "trans_map.pl failed."
@@ -40,9 +41,14 @@ mv ${trinOutDir}.Trinity.fasta ${trinFasta}
 errorExit "mv failed."
 
 # Add sampleID preflix to each transcript
-sed -i s/>TRINITY/>${id}_TRINITY/g ${trinFasta}
+sed -i "s/>TRINITY/>${id}_TRINITY/g" ${trinFasta}
 
-errorExit "sed failed."
+errorExit "sed (adding sample IDs) failed."
+
+# Remove trailing whitespaces from contig IDs
+sed -i 's/\s.*$//' ${trinFasta}
+
+errorExit "sed (removing trailing whitespaces) failed"
 
 # Counting transcipts
 count=$(grep -c "^>" ${trinFasta})

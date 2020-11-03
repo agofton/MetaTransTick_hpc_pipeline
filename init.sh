@@ -96,7 +96,7 @@ echo "${sampleID} written to ${scriptsDir}/slurmParams.txt"
 
 # copy tools dir to working direcory
 mkdir ${scriptsDir}/tools
-cp /datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/tools/*.sh ${scriptsDir}/tools/
+cp /datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/tools/* ${scriptsDir}/tools/
 errorExit "Error: copying bin/tools/ to working directory failed."
 echo "bin/tools copies to working directory."
 

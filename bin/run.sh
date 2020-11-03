@@ -68,16 +68,22 @@ all() {
 			echo "Job 6: blastN to nt; ${blastnTrin} queued with jobid=${job6ID}."
 			echo "${blastnTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
-	# diamond - dependent on trinity phase 3
+	# diamond .daa - dependent on trinity phase 3
 	job7=$(sbatch --dependency=afterok:${job5ID} -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diamLog} ${diamTrin})
 	job7ID=$(sed 's/Submitted batch job //g' <<< ${job7})
 			echo "Job 7: Diamond blastX to nr; ${diamTrin} queued with jobid=${job7ID}."
 			echo "${diamTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
-	# calculate contig coverage
-	job8=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	# diamond .txt - dependent on trinity phase 3
+	job8=$(sbatch --dependency=afterok:${job5ID} -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diam2Log} ${diamTrin2})
 	job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
-			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job8ID}."
+			echo "Job 7: Diamond blastX to nr; ${diamTrin2} queued with jobid=${job8ID}."
+			echo "${diamTrin2} will begin after successfull completion of ${trinP3}."
+			echo ""
+	# calculate contig coverage
+	job9=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	job9ID=$(sed 's/Submitted batch job //g' <<< ${job9})
+			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job9ID}."
 			echo "${concov} will begin after successfull completion of ${trinP3}."
 			echo ""
 
@@ -88,15 +94,16 @@ all() {
 	echo ${job4ID}	
 	echo ${job5ID}		
 	echo ${job6ID}		
-	echo ${job7ID}		
-	echo ${job8ID}	
+	echo ${job7ID}
+	echo ${job8ID}		
+	echo ${job9ID}	
 }
 
 derep() {
 	echo ""
 	echo "Running work flow steps Dereplication, Trinity phase 1, Trinity phase 2, Trinity phase 3, blast, diamond, & contig coverage."
 	echo ""
-	# derep - no dependency
+	# derep  - dependent on QC
 	job2=$(sbatch -J ${drJobName} -N ${drNodes} -n ${drTasks} -c ${drCPUsPerTask} -t ${drTime} --mem ${drMem} -o ${drLog} ${derep})
 	job2ID=$(sed 's/Submitted batch job //g' <<< ${job2})
 			echo "Job 2: Dereplication; ${derep} queued with jobid=${job2ID}."
@@ -107,7 +114,7 @@ derep() {
 			echo "Job 3: Trinity part 1; ${trinP1} queued with jobid=${job3ID}."
 			echo "${trinP1} will begin after successfull completion of ${derep}."
 			echo ""
-	# trinity phase 2  - dependent on trinity phase 1
+	# trinity phase 2 - dependent on trinity phase 1
 	job4=$(sbatch --dependency=afterok:${job3ID} -J ${t2JobName} -N ${t2Nodes} -n ${t2Tasks} -c ${t2CPUsPerTask} -t ${t2Time} --mem ${t2Mem} -o ${t2Log} -a ${t2Arrays} ${trinP2})
 	job4ID=$(sed 's/Submitted batch job //g' <<< ${job4})
 			echo "Job 4: Trinity part 2; ${trinP2} queued with jobid=${job4ID}."
@@ -125,33 +132,41 @@ derep() {
 			echo "Job 6: blastN to nt; ${blastnTrin} queued with jobid=${job6ID}."
 			echo "${blastnTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
-	# diamond  - dependent on trinity phase 3
+	# diamond .daa - dependent on trinity phase 3
 	job7=$(sbatch --dependency=afterok:${job5ID} -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diamLog} ${diamTrin})
 	job7ID=$(sed 's/Submitted batch job //g' <<< ${job7})
 			echo "Job 7: Diamond blastX to nr; ${diamTrin} queued with jobid=${job7ID}."
 			echo "${diamTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
-	# calculate contig coverage
-	job8=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	# diamond .txt - dependent on trinity phase 3
+	job8=$(sbatch --dependency=afterok:${job5ID} -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diam2Log} ${diamTrin2})
 	job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
-			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job8ID}."
+			echo "Job 7: Diamond blastX to nr; ${diamTrin2} queued with jobid=${job8ID}."
+			echo "${diamTrin2} will begin after successfull completion of ${trinP3}."
+			echo ""
+	# calculate contig coverage
+	job9=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	job9ID=$(sed 's/Submitted batch job //g' <<< ${job9})
+			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job9ID}."
 			echo "${concov} will begin after successfull completion of ${trinP3}."
 			echo ""
+
 	# outputting PIDs for easy reference
 	echo ${job2ID}	
 	echo ${job3ID}		
 	echo ${job4ID}	
 	echo ${job5ID}		
 	echo ${job6ID}		
-	echo ${job7ID}		
-	echo ${job8ID}	
+	echo ${job7ID}
+	echo ${job8ID}		
+	echo ${job9ID}	
 }
 
 trinityP1() {
 	echo ""
 	echo "Running work flow steps Trinity phase 1, Trinity phase 2, Trinity phase 3, blast, diamond, & contig coverage."
 	echo ""
-	# trinity phase 1 - no dependency
+	# trinity phase 1 - dependent on derep
 	job3=$(sbatch -J ${t1JobName} -N ${t1Nodes} -n ${t1Tasks} -t ${t1Time} --mem ${t1Mem} -o ${t1Log} ${trinP1})
 	job3ID=$(sed 's/Submitted batch job //g' <<< ${job3})
 			echo "Job 3: Trinity part 1; ${trinP1} queued with jobid=${job3ID}."
@@ -174,36 +189,45 @@ trinityP1() {
 			echo "Job 6: blastN to nt; ${blastnTrin} queued with jobid=${job6ID}."
 			echo "${blastnTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
-	# diamond - dependent on trinity phase 3
+	# diamond .daa - dependent on trinity phase 3
 	job7=$(sbatch --dependency=afterok:${job5ID} -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diamLog} ${diamTrin})
 	job7ID=$(sed 's/Submitted batch job //g' <<< ${job7})
 			echo "Job 7: Diamond blastX to nr; ${diamTrin} queued with jobid=${job7ID}."
 			echo "${diamTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
-	job8=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	# diamond .txt - dependent on trinity phase 3
+	job8=$(sbatch --dependency=afterok:${job5ID} -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diam2Log} ${diamTrin2})
 	job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
-			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job8ID}."
+			echo "Job 7: Diamond blastX to nr; ${diamTrin2} queued with jobid=${job8ID}."
+			echo "${diamTrin2} will begin after successfull completion of ${trinP3}."
+			echo ""
+	# calculate contig coverage
+	job9=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	job9ID=$(sed 's/Submitted batch job //g' <<< ${job9})
+			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job9ID}."
 			echo "${concov} will begin after successfull completion of ${trinP3}."
 			echo ""
-	# outputting PIDs for easy reference
+
+	# outputting PIDs for easy reference	
 	echo ${job3ID}		
 	echo ${job4ID}	
 	echo ${job5ID}		
 	echo ${job6ID}		
-	echo ${job7ID}		
-	echo ${job8ID}	
+	echo ${job7ID}
+	echo ${job8ID}		
+	echo ${job9ID}	
 }
 
 trinityP2() {
 	echo ""
 	echo "Running work flow steps Trinity phase 2, Trinity phase 3, blast, diamond, & contig coverage."
 	echo ""
-	# trinity phase 2 - no dependency
+	# trinity phase 2 - dependent on trinity phase 1
 	job4=$(sbatch -J ${t2JobName} -N ${t2Nodes} -n ${t2Tasks} -c ${t2CPUsPerTask} -t ${t2Time} --mem ${t2Mem} -o ${t2Log} -a ${t2Arrays} ${trinP2})
 	job4ID=$(sed 's/Submitted batch job //g' <<< ${job4})
 			echo "Job 4: Trinity part 2; ${trinP2} queued with jobid=${job4ID}."
 			echo ""
-	# trinity phase 3- dependent on trinity phase 2
+	# trinity phase 3 - dependent on trinity phase 2
 	job5=$(sbatch --dependency=afterok:${job4ID} -J ${t3JobName} -N ${t3Nodes} -n ${t3Tasks} -c ${t3CPUsPerTask} -t ${t3Time} --mem ${t3Mem} -o ${t3Log} ${trinP3})
 	job5ID=$(sed 's/Submitted batch job //g' <<< ${job5})
 			echo "Job 5: Trinity part 3 (final); ${trinP3} queued with jobid=${job5ID}."
@@ -215,30 +239,39 @@ trinityP2() {
 			echo "Job 6: blastN to nt; ${blastnTrin} queued with jobid=${job6ID}."
 			echo "${blastnTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
-	# diamond - dependent on trinity phase 3
+	# diamond .daa - dependent on trinity phase 3
 	job7=$(sbatch --dependency=afterok:${job5ID} -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diamLog} ${diamTrin})
 	job7ID=$(sed 's/Submitted batch job //g' <<< ${job7})
 			echo "Job 7: Diamond blastX to nr; ${diamTrin} queued with jobid=${job7ID}."
 			echo "${diamTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
-	job8=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	# diamond .txt - dependent on trinity phase 3
+	job8=$(sbatch --dependency=afterok:${job5ID} -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diam2Log} ${diamTrin2})
 	job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
-			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job8ID}."
+			echo "Job 7: Diamond blastX to nr; ${diamTrin2} queued with jobid=${job8ID}."
+			echo "${diamTrin2} will begin after successfull completion of ${trinP3}."
+			echo ""
+	# calculate contig coverage
+	job9=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	job9ID=$(sed 's/Submitted batch job //g' <<< ${job9})
+			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job9ID}."
 			echo "${concov} will begin after successfull completion of ${trinP3}."
 			echo ""
-	# outputting PIDs for easy reference
+
+	# outputting PIDs for easy reference		
 	echo ${job4ID}	
 	echo ${job5ID}		
 	echo ${job6ID}		
-	echo ${job7ID}		
-	echo ${job8ID}	
+	echo ${job7ID}
+	echo ${job8ID}		
+	echo ${job9ID}	
 }
 
 trinityP3() {
 	echo ""
 	echo "Running work flow steps Trinity phase 3, blast, diamond, & contig coverage."
 	echo ""
-	# trinity phase 3 - no dependency
+	# trinity phase 3 - dependent on trinity phase 2
 	job5=$(sbatch -J ${t3JobName} -N ${t3Nodes} -n ${t3Tasks} -c ${t3CPUsPerTask} -t ${t3Time} --mem ${t3Mem} -o ${t3Log} ${trinP3})
 	job5ID=$(sed 's/Submitted batch job //g' <<< ${job5})
 			echo "Job 5: Trinity part 3 (final); ${trinP3} queued with jobid=${job5ID}."
@@ -249,47 +282,63 @@ trinityP3() {
 			echo "Job 6: blastN to nt; ${blastnTrin} queued with jobid=${job6ID}."
 			echo "${blastnTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
-	# diamond - dependent on trinity phase 3
+	# diamond .daa - dependent on trinity phase 3
 	job7=$(sbatch --dependency=afterok:${job5ID} -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diamLog} ${diamTrin})
 	job7ID=$(sed 's/Submitted batch job //g' <<< ${job7})
 			echo "Job 7: Diamond blastX to nr; ${diamTrin} queued with jobid=${job7ID}."
 			echo "${diamTrin} will begin after successfull completion of ${trinP3}."
 			echo ""
-	job8=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	# diamond .txt - dependent on trinity phase 3
+	job8=$(sbatch --dependency=afterok:${job5ID} -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diam2Log} ${diamTrin2})
 	job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
-			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job8ID}."
+			echo "Job 7: Diamond blastX to nr; ${diamTrin2} queued with jobid=${job8ID}."
+			echo "${diamTrin2} will begin after successfull completion of ${trinP3}."
+			echo ""
+	# calculate contig coverage
+	job9=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	job9ID=$(sed 's/Submitted batch job //g' <<< ${job9})
+			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job9ID}."
 			echo "${concov} will begin after successfull completion of ${trinP3}."
 			echo ""
-	# outputting PIDs for easy reference
+
+	# outputting PIDs for easy reference	
 	echo ${job5ID}		
 	echo ${job6ID}		
-	echo ${job7ID}		
-	echo ${job8ID}	
+	echo ${job7ID}
+	echo ${job8ID}		
+	echo ${job9ID}	
 }
 
 blast+diamond() {
 	echo ""
 	echo "Running work flow steps blast, diamond, & contig coverage."
 	echo ""
-	# blast - no dependency
+	# blast - dependent on trinity phase 3
 	job6=$(sbatch -J ${blastJobName} -N ${blastNodes} -n ${blastTasks} -c ${blastCPUsPerTask} -t ${blastTime} --mem ${blastMem} -o ${blastLog} ${blastnTrin})
 	job6ID=$(sed 's/Submitted batch job //g' <<< ${job6})
 			echo "Job 6: blastN to nt; ${blastnTrin} queued with jobid=${job6ID}."
 			echo ""
-	# diamond - no dependency
+	# diamond .daa - dependent on trinity phase 3
 	job7=$(sbatch -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diamLog} ${diamTrin})
 	job7ID=$(sed 's/Submitted batch job //g' <<< ${job7})
 			echo "Job 7: Diamond blastX to nr; ${diamTrin} queued with jobid=${job7ID}."
 			echo ""
-	job8=$(sbatch -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	# diamond .txt - dependent on trinity phase 3
+	job8=$(sbatch -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diam2Log} ${diamTrin2})
 	job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
-			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job8ID}."
+			echo "Job 7: Diamond blastX to nr; ${diamTrin2} queued with jobid=${job8ID}."
 			echo ""
-	
-	# outputting PIDs for easy reference
+	# calculate contig coverage
+	job9=$(sbatch -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	job9ID=$(sed 's/Submitted batch job //g' <<< ${job9})
+			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job9ID}."
+			echo ""
+
+	# outputting PIDs for easy reference		
 	echo ${job6ID}		
 	echo ${job7ID}
-	echo ${job8ID}	
+	echo ${job8ID}		
+	echo ${job9ID}	
 }
 
 onlyQC() {
@@ -393,17 +442,26 @@ onlyDiamond() {
 	# diamond - no dependency
 	job7=$(sbatch -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diamLog} ${diamTrin})
 	job7ID=$(sed 's/Submitted batch job //g' <<< ${job7})
-	echo "Job 7: Diamond blastX to nr; ${diamTrin} queued with jobid=${job7ID}."
-	echo ""
+		echo "Job 7: Diamond blastX to nr; ${diamTrin} queued with jobid=${job7ID}."
+		echo ""
+	# diamond .txt - dependent on trinity phase 3
+	job8=$(sbatch -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diam2Log} ${diamTrin2})
+	job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
+			echo "Job 7: Diamond blastX to nr; ${diamTrin2} queued with jobid=${job8ID}."
+			echo ""
+	# writing PIDs
+	echo ${job7ID}
+	echo ${job8ID}
+
 }
 
 onlyConCov() {
 	echo ""
 	echo "Running work flow step: Contig Coverage (bwa + samtools)."
 	echo ""
-job8=$(sbatch -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
-job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
-		echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job8ID}."
+	job9=$(sbatch -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
+	job9ID=$(sed 's/Submitted batch job //g' <<< ${job9})
+		echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job9ID}."
 		echo ""
 }
 
