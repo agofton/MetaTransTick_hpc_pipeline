@@ -28,13 +28,5 @@ done
 shift $((OPTIND - 1))
 
 #####
+awk '!a[$1]++' ${blast_in} > ${output}
 
-# Sort first by query name, then bitscore, then evalue, then %identity, and extract the best lines for each query.
-# bitscore > evalue > %identiy
-# k1=query
-# k15=bitscore
-# k14=evalue
-# k6=%identity
-# these colums will change if you alter the blast 6 oftfmt format.
-
-sort -k1,1 -k15,15gr -k14,14g -k6,6gr ${blast_in} | sort -u -k 1,1 --merge > ${output}

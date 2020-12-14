@@ -1,12 +1,10 @@
 #!/bin/bash
-
+date
 source slurmParams.txt
 
 errorExit() {
 	if [ $? -ne 0 ]; then
 		echo $1; date; exit 1;
-	else
-		echo $2
 	fi
 }
 
@@ -27,9 +25,10 @@ then
 		-CPU ${SLURM_CPUS_PER_TASK} \
 		-v -shuffle
 
-	errorExit \
-		"ParaFly failed: ${inArray[$i]}" \
-		"ParaFly Complete: ${inArray[$i]}"
+	errorExit "ParaFly failed: ${inArray[$i]}"
+	echo "ParaFly Complete: ${inArray[$i]}"
 else
 	echo "Error: missing array index as SLURM_ARRAY_TASK_ID"
 fi
+
+date

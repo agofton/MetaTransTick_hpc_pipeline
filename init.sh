@@ -2,16 +2,17 @@
 date
 
 helpMessage() {
-	echo "$0 usage: -f sample_x_R1.fastq.gz <raw input R1 file> -r sample_x_R2.fastq.gz <raw input R1 file> -o <output folder> -h show this message";
+	echo "$0 usage: -f sample_x_R1.fastq.gz <raw input R1 file> -r sample_x_R2.fastq.gz <raw input R1 file> -o <output folder> -h [show this message]";
+	echo "<> = manditory argument, [] = optional argument"
 	echo "";
-	echo "Initialises all folders and scripts needed for analysis. Assumes input files are in the format: sample_xxx_R1.fastq.gz & sample_xxx_R2.fastq.gz, where 'sample_xxx_' can be whatever samples ID you want. This sample ID will be carried through the whole analysis and appended onto the transcript IDs - so make sure it is not too long.";
+	echo "Initialises all folders and scripts needed for trascriptome assembly and analysis. Assumes input files are in the format: sample_xxx_R1.fastq.gz & sample_xxx_R2.fastq.gz, where 'sample_xxx_' can be whatever samples ID you want. This sample ID will be carried through the whole analysis and appended onto the transcript IDs - so make sure it is not too long.";
 	echo "";
-	echo "USE COMPLETE PATHS TO AVOID FUCK UPS!";
+	echo "Best to use complete paths!";
 	echo "";
 	exit 1;
 }
 
-errorExit() {							# $1 is error message, completion message can be added to scrpit after command if desired.
+errorExit() {
 	if [ $? -ne 0 ]; then
 		echo $1; date; exit 1;
 	fi
@@ -25,51 +26,52 @@ do
 	        h) helpMessage;;
 	        f) R1=${OPTARG};;
 	        r) R2=${OPTARG};;
-					o) outputDir=${OPTARG};;
+			o) outputDir=${OPTARG};;
 	esac
 done
 shift $((OPTIND - 1))
 
-# Check R1 exists
+date
+
+# Checking that R1 and R2 input files exist.
 if [ ! -f "${R1}" ]; then
 	errorExit "Error: Input R1 file does not exist."
 fi
-
-# Check R2 exists
 if [ ! -f "${R2}" ]; then
 	errorExit "Error: Input R2 file does not exits."
 fi
 
-# Check R1 & R2 are not the same file
+# Checking that R1 & R2 are not the same file.
 if [ "${R1}" == "${R2}" ]; then
 	errorExit "Input error: -f and -r cannot be the same."
 fi
 
-# Check if outputDir already exists - cancel overwrite
+# Checking if outputDir already exists - will not overwrite existing directory.
 if [ -d "${outputDir}" ]; then
 	errorExit "Error: Output directory already exists. Cannot overwrite."
 fi
 
-# Get sample ID from R1 input. Assumes file names are in format whatever_sampleX_R1.fastq.gz & whatever_sampleX_R2.fastq.gz
+# Get sampleID from R1 input file (Any string before 1st underscore).
 sampleID=$(basename ${R1} _R1.fastq.gz)
 echo "SampleID = ${sampleID}"
 
-# setting up direcory structure
+# Setting up direcory structure.
 outDir=${outputDir}/${sampleID} 	# All output goes here
-scriptsDir=${outDir}/scripts 			# Scripts are stored and launched from here
-
+scriptsDir=${outDir}/scripts 		# Scripts are stored and launched from here
 mkdir -p ${outDir}
 mkdir ${scriptsDir}
-mkdir ${outDir}/logs 							# All slurm log files will do here
+mkdir ${outDir}/logs 				# All slurm log files will do here
 
-# copy raw data to sample working directory
-cp ${R1} ${outDir}/ && errorExit "Copying ${R1} to ${outDir} failed."
+# Copy raw data to working directory.
+cp ${R1} ${outDir} 
+errorExit "Copying ${R1} to ${outDir} failed."
 echo "${R1} copied to working dir: ${outDir}"
 
-cp ${R2} ${outDir}/ && errorExit "Copying ${R2} to ${outDir} failed."
+cp ${R2} ${outDir}
+errorExit "Copying ${R2} to ${outDir} failed."
 echo "${R2} copied to working dir: ${outDir}"
 
-# copy analysis scripts to working directory
+# Copy analysis scripts to working directory.
 for x in /datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/*.slurm.sh
 do
 	newFilename=$(basename $x .slurm.sh).${sampleID}.slurm.sh
@@ -78,13 +80,13 @@ do
 	echo "${newFilename} copied to ${scriptsDir}."
 done
 
-# copy run.sh to working dir
+# Copy run.sh to working dir
 runScript=/datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/run.sh
 cp ${runScript} ${scriptsDir}/$(basename ${runScript} .sh).${sampleID}.sh
 errorExit "Error: copying run.sh to working directory failed."
 echo "run.sh copied to ${scriptsDir}"
 
-# copy slurmParams.txt to working dir and add universal variables
+# Copy slurmParams.txt to working dir and add universal variables
 slurmParams=/datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/slurmParams.txt
 cp ${slurmParams} ${scriptsDir}/slurmParams.txt
 errorExit "Error: copying slurmParams.txt to working directory failed."
@@ -94,17 +96,16 @@ sed -i s@SAMPLEID@${sampleID}@g ${scriptsDir}/slurmParams.txt
 errorExit "Error: writing SAMPLEID variable to slurmParams.txt failed."
 echo "${sampleID} written to ${scriptsDir}/slurmParams.txt"
 
-# copy tools dir to working direcory
+# Copy tools dir to working direcory.
 mkdir ${scriptsDir}/tools
 cp /datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/tools/* ${scriptsDir}/tools/
 errorExit "Error: copying bin/tools/ to working directory failed."
 echo "bin/tools copies to working directory."
 
-# final comments to stdout
+# Final comments to stdout.
 echo "All output directories and analysis scripts created..."
 echo ""
-echo "Run commands:"
-echo "cd ${outDir}/scripts"
-echo "nohup run.${sampleID}.sh &"
+echo "To launch analysis:"
+echo "cd ${outDir}/scripts && ./run.${sampleID}.sh -m all"
 echo ""
 date

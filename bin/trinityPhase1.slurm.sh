@@ -1,13 +1,10 @@
 #!/bin/bash
 date
-
 source slurmParams.txt
 
 errorExit() {
 	if [ $? -ne 0 ]; then
 		echo $1; date; exit 1;
-	else
-		echo $2
 	fi
 }
 
@@ -16,7 +13,6 @@ module load perl
 module load bowtie/2.3.4
 
 export OMP_NUM_THREADS=${SLURM_NTASKS}
-
 maxMemGB=$(echo ${SLURM_MEM_PER_NODE} | cut -c1-3)G
 
 # link read_partions to /dev/shm/gof005.${SLURM_ID}/read_partitions
@@ -36,9 +32,8 @@ Trinity \
 	--no_normalize_reads \
 	--no_distributed_trinity_exec
 
-errorExit \
-	"Trinity failed: ${derepOut1}, ${derepOut2}" \
-	"Trinity finished sucessfully: ${derepOut1}, ${derepOut2}"
+errorExit "Trinity failed: ${derepOut1}, ${derepOut2}" 
+echo "Trinity finished sucessfully: ${derepOut1}, ${derepOut2}"
 
 # break symlink to /dev/shm & move data back to working dir
 mkdir ${trinOutDir}/rp_tmp
@@ -54,9 +49,8 @@ split \
 	${trinOutDir}/recursive_trinity.cmds \
 	${trinOutDir}/recursive_trinity.cmds.chunk.
 
-errorExit \
-	"Splitting recursive_trinity.cmds failed." \
-	""
+errorExit "Splitting recursive_trinity.cmds failed."
+
 #output will be:
 # 	recursive_trinity.cmds.chunk.00
 # 	recursive_trinity.cmds.chunk.01

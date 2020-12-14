@@ -1,6 +1,5 @@
 #!/bin/bash
 date
-
 source slurmParams.txt
 
 errorExit() {

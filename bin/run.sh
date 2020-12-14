@@ -77,13 +77,13 @@ all() {
 	# diamond .txt - dependent on trinity phase 3
 	job8=$(sbatch --dependency=afterok:${job5ID} -J ${diamJobName} -N ${diamNodes} -n ${diamTasks} -c ${diamCPUsPerTask} -t ${diamTime} --mem ${diamMem} -o ${diam2Log} ${diamTrin2})
 	job8ID=$(sed 's/Submitted batch job //g' <<< ${job8})
-			echo "Job 7: Diamond blastX to nr; ${diamTrin2} queued with jobid=${job8ID}."
+			echo "Job 8: Diamond blastX to nr; ${diamTrin2} queued with jobid=${job8ID}."
 			echo "${diamTrin2} will begin after successfull completion of ${trinP3}."
 			echo ""
 	# calculate contig coverage
 	job9=$(sbatch --dependency=afterok:${job5ID} -J ${concovJobName} -N ${concovNodes} -n ${concovTasks} -c ${concovCPUsPerTask} -t ${concovTime} --mem ${concovMem} -o ${concovLog} ${concov})
 	job9ID=$(sed 's/Submitted batch job //g' <<< ${job9})
-			echo "Job 8: Calc. contig coverage; ${concov} queued with jobid=${job9ID}."
+			echo "Job 9: Calc. contig coverage; ${concov} queued with jobid=${job9ID}."
 			echo "${concov} will begin after successfull completion of ${trinP3}."
 			echo ""
 

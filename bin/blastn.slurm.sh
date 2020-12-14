@@ -1,18 +1,15 @@
 #!/bin/bash
 date
-
 source slurmParams.txt
 
 errorExit() {
 	if [ $? -ne 0 ]; then
 		echo $1; date; exit 1;
-	else
-		echo $2; date; echo "";
 	fi
 }
 
 module load bioref
-module load blast+/2.9.0
+module load blast+/2.11.0
 
 mkdir ${blastDir}
 
@@ -29,9 +26,8 @@ blastn \
 	-max_hsps 5 \
 	-evalue 1e-10
 
-errorExit \
-	"Megablast failed: ${trinIn}" \
-	"Megablast finished sucessfully: ${trinIn}"
+errorExit "Megablast failed: ${trinIn}"
+echo "Megablast finished sucessfully: ${trinIn}"
 
 # Write pairwise output
 blast_formatter \
@@ -39,9 +35,8 @@ blast_formatter \
 	-outfmt 0 \
 	-out ${outfmt0}
 
-errorExit \
-	"Writing pairwise output failed: ${outfmt0}" \
-	"Pairwise output written: ${outfmt0}"
+errorExit "Writing pairwise output failed: ${outfmt0}"
+echo "Pairwise output written: ${outfmt0}"
 
 # Write tabular output
 blast_formatter \
@@ -49,9 +44,8 @@ blast_formatter \
 	-out ${outfmt6} \
 	-outfmt '6 qseqid ssciname saccver stitle staxid pident length mismatch gapopen qstart qend sstart send evalue bitscore'
 
-errorExit \
-	"Writing tabular output failed: ${outfmt6}" \
-	"Tabular output written: ${outfmt6}"
+errorExit "Writing tabular output failed: ${outfmt6}"
+echo "Tabular output written: ${outfmt6}"
 
 # Writing top hits only
 cat ${outfmt6} | awk '!a[$1]++' > ${topHits}

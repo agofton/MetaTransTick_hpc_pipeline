@@ -3,13 +3,13 @@
 # run.sh job listing
 qc=QC.SAMPLEID.slurm.sh
 derep=derep.SAMPLEID.slurm.sh
-trinP1=trinity_P1.SAMPLEID.slurm.sh
-trinP2=trinity_P2.SAMPLEID.slurm.sh
-trinP3=trinity_P3.SAMPLEID.slurm.sh
-blastnTrin=blast_trin.SAMPLEID.slurm.sh
-diamTrin=diam_trin.SAMPLEID.slurm.sh
-diamTrin=diam_trin2.SAMPLEID.slurm.sh
-concov=contig_cov.SAMPLEID.slurm.sh
+trinP1=trinityPhase1.SAMPLEID.slurm.sh
+trinP2=trinityPhase2.SAMPLEID.slurm.sh
+trinP3=trinityPhase3.SAMPLEID.slurm.sh
+blastnTrin=blastn.SAMPLEID.slurm.sh
+diamTrin=diamond_daa.SAMPLEID.slurm.sh
+diamTrin2=diamond_tab.SAMPLEID.slurm.sh
+concov=contig_coverage_TPM.SAMPLEID.slurm.sh
 
 # QC.slurm.sh
 qcDir=../QC
@@ -78,7 +78,7 @@ drLog=../logs/dr_SAMPLEID_%A.slurm.log 		# must contain SAMPLEID
 drNodes=1
 drTasks=1
 drCPUsPerTask=20
-drMem=512GB
+drMem=2999GB
 drTime=06:00:00
 
 # trinity_P1.slurm.sh
@@ -87,7 +87,7 @@ t1Log=../logs/trin1_SAMPLEID_%A.slurm.log		# must contain SAMPLEID
 t1Nodes=1
 t1Tasks=48
 t1Mem=2999GB
-t1Time=72:00:00
+t1Time=32:00:00
 nChunks=10 																		# number of job for Trinity Phase 2
 # no CPUs-per-task for this command
 
@@ -127,7 +127,7 @@ diamNodes=1
 diamTasks=1
 diamCPUsPerTask=20
 diamMem=100GB
-diamTime=48:00:00
+diamTime=24:00:00
 
 # contig_cov.slurm.sh
 concovJobName=ccovSAMPLEID 												# must contain SAMPLEID
