@@ -6,6 +6,7 @@ import os
 import sys
 import pandas as pd
 import argparse
+from termcolor import colored, cprint
 
 # Init argparse
 parser = argparse.ArgumentParser(description="Combines lca taxonomy .csv, blastn top hits .txt, blastx (diamond) top hits .txt, and contigs statistics .txt into once .csv summary file.")
@@ -28,28 +29,28 @@ args = parser.parse_args()
 # Import blastn_lca.csv and give col headings
 lca_bn = pd.read_csv(args.lca_bn, header = None)
 lca_bn.columns = ["contig_id", "blastn_tax_path"]
-print("Imported blastn lca file.")
+cprint("Imported blastn lca file: " + str(args.lca_bn), "blue", attrs = ["bold"])
 
 # Import blastx(diamond) lca.csv and give col headings
 lca_bx = pd.read_csv(args.lca_bx, header = None)
 lca_bx.columns = ["contig_id", "blastx_tax_path"]
-print("Imported diamond lca file.")
+cprint("Imported diamond lca file: " + str(args.lca_bx), "blue", attrs = ["bold"])
 
 # Import blastn results and give col names
-bn = pd.read_csv(args.bn, sep = "\t", header = None)
+bn = pd.read_csv(args.bn, sep = "\t", header = None, dtype = str)
 bn.columns = ["contig_id", "bn_sciname", "bn_accession", "bn_title", "bn_tax_id", "bn_perc_id", "bn_length", "bn_missmatch", "bn_gapopen", "bn_qstart", "bn_qend", "bn_sstart", "bn_send", "bn_evalue", "bn_bitscore"]
-print("Imported blastn top hits file.")
+cprint("Imported blastn top hits file: " + str(args.bn), "blue", attrs = ["bold"])
 
 # Import blastx (diamond) results and give col names
 bx = pd.read_csv(args.bx, sep = "\t", header = None)
 bx.columns = ["contig_id", "bx_sciname", "bx_accession", "bx_title", "bx_tax_id", "bx_perc_id", "bx_length", "bx_missmatch", "bx_gapopen", "bx_qstart", "bx_qend", "bx_sstart", "bx_send", "bx_evalue", "bx_bitscore"]
-print("Imported diamond top hits file.")
+cprint("Imported diamond top hits file: " + str(args.bx), "blue", attrs = ["bold"])
 
 # Import TPM.txt, tab separated, and rename 1st col header
 tpm = pd.read_csv(args.tpm, sep = "\t")
-tpm.rename(columns={"X.rname" : "contig_id"}, inplace = True)
+tpm.rename(columns={"#rname" : "contig_id"}, inplace = True)
 tpm.rename(columns={"endpos" : "contig_length"}, inplace = True)
-print("Imported contig read mapping stats file.")
+cprint("Imported contig read mapping stats file: " + str(args.tpm), "blue", attrs = ["bold"])
 
 # Filter out unassigned reads from lca dfs
 unass_bn = ["NCBI;", "NCBI;cellular organisms;", "NCBI;No hits;", "NCBI;Not assigned;"]
@@ -84,4 +85,4 @@ final_df = lca_tpm_blast[cols_to_keep]
 
 # Write file as tap separated .txt
 final_df.to_csv(args.out, index = False, sep = "\t")
-print("Writing contig summary file...Complete.")
+cprint("Writing contig summary file " + str(args.out) + " ...Complete.", "green", attrs = ["bold", "blink"])

@@ -31,9 +31,9 @@ result = (num_mapped / num_reads) * 100
 rounded_result = round(result, 2)
 
 # Print results
-print(str(args.input_bam) + ':')
-print(str(num_mapped) + " of " + str(num_reads) + " mapped.")
-print(str(rounded_result) + "% of reads mapped.")
+print(str(args.flagstat) + ':')
+print("num_mapped" + "\t" + "pct_mapped")
+print(str(num_mapped) + "\t" + str(rounded_result) + "%")
 print()
 
 

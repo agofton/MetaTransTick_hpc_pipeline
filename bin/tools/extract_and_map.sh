@@ -5,78 +5,106 @@
 errorExit() {
 	if [[ $? -ne 0 ]]; then
 		echo $1; date; exit 1
-	else
-		echo $2
 	fi
 }
 
-hmessage="Script searches for a taxon key word (eg. Bacteria) in the lca_summary file (output of contig_lca_sum.py), extract contigs that match that taxon key word, mapps all reads back to those contigs with bwa mem, sorts the bam file, and creasts samtools flagstat.txt file."
-usage="Usage: $(basename "$0") -l lca_sum.txt -z taxon to search -s sample ID -t trinity.fasta -f R1.fastx.gz -r R2.fastx.gz -o output directory (output files will be names with -s sample ID) -p threads"
+HMESSAGE="Script searches for a taxon key word (eg. Bacteria) in the lca_summary file (output of contig_lca_sum.py), extracts contigs that match that taxon key word from both trinity.fasta and bt2.sam. Then performs some basic mapping rate calculations which are printed to the screen."
+USAGE="""Usage: $(basename "$0") 
+		-l lca_sum.txt input file 
+		-z taxon to search 
+		-s seqIDs output file
+		-f taxon contigs output.fasta 
+		-t trinity.fasta input file 
+		-m trinity.sam input file 
+		-c tax.sam output file 
+		-p tax.flagstat.txt outputfile 
+		-y trinity.flagstat.txt input file
+		-o mapping_stats_out.txt
+"""
 
+# Text colors
+BLACK='\033[0;01m'
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+ORANGE='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+GRAY='\033[0;37m'
+NC='\033[0m' # No Color (White)
 
-# Default params go here
-THREADS=8
-
-### Command line arguments ###
-while getopts hl:z:s:t:f:r:o:p: option; do
-        case "${option}" in
-                h) echo "$hmessage"
-                   echo "$usage"
-                   exit;;
-                l) LCA=$OPTARG;;
-                z) TAX=$OPTARG;;
-                s) SAMID=$OPTARG;;
-                t) FASTA=$OPTARG;;
-                f) R1=$OPTARG;;
-                r) R2=$OPTARG;;
-                o) OUT=$OPTARG;;
-				p) THREADS=$OPTARG;;
-        esac
+# Command line arguments
+while getopts hl:z:s:f:t:m:c:p:y:o: option; do
+    case "${option}" in
+            h) printf "${CYAN}${HMESSAGE}"
+			   printf "\n"
+               printf "${ORANGE}${USAGE}"
+               exit;;
+            l) LCA=$OPTARG;;
+            z) TAX=$OPTARG;;
+            s) SEQIDS=$OPTARG;;
+            f) CONTIGS=$OPTARG;;
+            t) TRIN_FASTA=$OPTARG;;
+			m) SAM=$OPTARG;;
+			c) TAX_SAM=$OPTARG;;
+			p) TAX_SAM_FLAGSTAT=$OPTARG;;
+			y) TRIN_FLAGSTAT=$OPTARG;;
+			o) OUT=$OPTARG;;
+			/?) printf "${RED}Invalid option: -$OPTARG" 1>&2
+    esac
 done
 shift $((OPTIND - 1))
 
-echo ""
-mkdir ${OUT}
+printf "\n"
 
+printf "${BLUE}Finding ${TAX} contigs IDs in ${LCA} ...\n"
+awk -F "\t" '{print $1, $2, $3}' ${LCA} | grep ${TAX} | awk -F " " '{print $1}' > ${SEQIDS}
+errorExit "Searching for ${TAX} contig IDs in ${LCA} failed!"
+printf "${GREEN}Searching for ${TAX} contig IDs in ${LCA} complete... "
+printf "${GREEN}${TAX} contig IDs written to ${SEQIDS} \n"
 
-# Find and extract contigs 
-echo "Finding ${TAX} contigs in ${LCA} with grep..."
+NSEQ=$(cat ${SEQIDS} | wc -l)
+if [[ ${NSEQ} -eq 0 ]]; then
+	printf "${RED}No ${TAX} contigs in ${TRIN_FASTA}!\n"
+	exit 0
+else
+	printf "${ORANGE}${TAX} contigs: ${NSEQ} \n"
+	printf "${NC}\n"
+fi
 
-	RND=${RANDOM}
-	TMP=tmp_${RND}_${SAMID}_${TAX}.txt
-	awk -F "\t" '{print $1, $2, $3}' ${LCA} > ${TMP}
-	errorExit "awk failed!" ""
+printf "${BLUE}Extracting ${TAX} contigs from ${TRIN_FASTA}...${NC} \n"
+usearch9.2_linux64 -fastx_getseqs ${TRIN_FASTA} -labels ${SEQIDS} -fastaout ${CONTIGS}
+printf "\n"
+errorExit "Extracting ${TAX} contigs from ${TRIN_FASTA} failed!"
+printf "${GREEN}Extracting ${TAX} contigs from ${TRIN_FASTA} complete... "
+printf "${GREEN}${TAX} contigs writen to ${CONTIGS}. \n"
 
-	SEQIDS=${OUT}/${SAMID}_${TAX}_contigs.seqIDs.txt
-	grep ${TAX} ${TMP} | awk -F " " '{print $1}' > ${SEQIDS}
-	errorExit "grep failed!" ""
+printf "${BLUE}Extracting contigs from ${SAM}... \n"
+grep -f ${SEQIDS} ${SAM} > ${TAX_SAM}	
+errorExit "Extracting ${TAX} contig alignments from ${SAM} failed!"
+printf "${GREEN}${TAX} contigs extracting from ${SAM}."
+printf "${GREEN}${TAX} contigs written to ${TAX_SAM}. \n"
 
-	rm -f ${TMP}
-	errorExit "Searching for ${TAX} contigs in ${LCA} failed!" "Searching for ${TAX} contigs in ${LCA} complete."
-	
-echo ""
-echo "Extracting ${TAX} contigs from ${FASTA}..."
+printf "${BLUE}Calculating mapping stats with samtools and python ... \n"
+samtools flagstat -@ 8 ${TAX_SAM} > ${TAX_SAM_FLAGSTAT} 2> /dev/null # Std error redirected to /dev/nul to silence verbose output to screen
+errorExit "Samtools flagstat failed!"
+printf "${GREEN}Samtools flagstat complete."
+printf "${GREEN}${TAX_SAM_FLAGSTAT} written."
+printf "${NC}\n"
 
-	TAXCONTIGS=${OUT}/${SAMID}_${TAX}_contigs.fasta
-	usearch9.2_linux64 -fastx_getseqs ${FASTA} -labels ${SEQIDS} -fastaout ${TAXCONTIGS}
-	errorExit "Extracting ${TAX} contigs from ${FASTA} failed!" "Extracting ${TAX} contigs from ${FASTA} complete."
+# Calcs in python
+/data/hb-austick/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/tools/tax_mapping_pct.py \
+	-t ${TRIN_FASTA} -l ${LCA} -f ${CONTIGS} -x ${TAX_SAM_FLAGSTAT} -y ${TRIN_FLAGSTAT} -z ${TAX} -o ${OUT}
 
-echo ""
-echo "Mapping reads against ${TAXCONTIGS} with bwa..."
-	
-	BWAINDEX=${OUT}/${SAMID}_${TAX}_contigs
-	bwa index -p ${BWAINDEX} ${TAXCONTIGS}
-	errorExit "BWA index failed!" "BWA index complete."
-
-	echo ""
-	BAM=${OUT}/${SAMID}_${TAX}_contig.bam
-	bwa mem -t ${THREADS} ${BWAINDEX} ${R1} ${R2} | samtools sort > ${BAM}
-	errorExit "BWA mem failed!" "BWA mem complete."
-
-	echo ""
-	FLAGSTAT=${OUT}/${SAMID}_${TAX}_contig.flagstat.txt
-	samtools flagstat -@ ${THREADS} ${BAM} > ${FLAGSTAT} 
-	errorExit "Samtools flagstat failed!" "Samtools flagstat complete."
-
-echo "Script complete."
+printf "\n"
+errorExit "Calculations in python3 failed!"
+printf "${GREEN}Calculations in python complete."
 date
+
+
+
+
+
+
+
+

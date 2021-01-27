@@ -6,18 +6,48 @@ import pandas as pd
 import os
 import sys
 import argparse
+from termcolor import colored, cprint
 
 parser = argparse.ArgumentParser(description = "Extracts contigs of a given taxon, maps all reads to those contigs using bwa mem, ")
-parser.add_argument("-l", "--lca_sum_file", help = "lca summary file. Output of contig_lca_sum.py", type = str, required = True)
-parser.add_argument("-t", "--taxon", help = "Taxon to filter contigs by.", type = str, required = True)
+parser.add_argument("-l", "--lcasum", help = "lca summary file. Output of contig_lca_sum.py", type = str, required = True)
+parser.add_argument("-t", "--tax", help = "Taxon to filter contigs by.", type = str, required = True)
+parser.add_argument("-s", "--seqIDs", help = "File to write taxon seqIDs to (.txt).", type = str, required = True)
+parser.add_argument("-z", "--trinfasta", help = "trinity fasta file.", type = str, required = True)
+parser.add_argument("-t", "--taxfasta", help = "File to write taxon contigs to (.fasta).", type = str, required = True)
+
+
 parser.add_argument("-s", "--sampleID", help = "sample ID prefix.", type = str, required = True)
-parser.add_argument("-z", "--trin_fasta", help = "trinity fasta file.", type = str, required = True)
 parser.add_argument("-f", "--R1", help = "R1.fastq for mapping.", type = str, required = True)
 parser.add_argument("-r", "--R2", help = "R2.fastq for mapping.", type = str, required = True)
 parser.add_argument("-b", "--trinity_bam", help = "bam file of whole trinity assembly", type = str, required = True)
 parser.add_argument("-o", "--out_file", help = "output.txt", type = str, required = True)
 parser.parse_args()
 args = parser.parse_args()
+
+# Search 2nd and 3rd col of lca_sum.txt for taxon keywork, return col1 (contig_IDs) to new file.
+df = pd.read_csv(args.lcasum, sep = "\t", dtype = str)
+col123 = df[[""]]
+
+
+
+
+
+
+os.system('awk -F "\t" '{print $1, $2, $3}' ' + args.lcasum + ' | grep args.tax | awk '{print $1}' > ' + args.seqIDs)
+cprint(str(args.seqIDs) + " file written...", "green", attrs = ["bold", "blink"])
+
+# Use usearch to extract those contigs from trinity.fasta and write to a new file
+os.system('usearch9.2_linux64 -fastx_getseqs ' + args.trinfasta + ' -labels ' + args.seqIDs + ' -fastaout ' + args.taxfasta)
+cprint(str(args.taxfasta) + " file written...", "green", attrs = ["bold", "blink"])
+
+
+
+
+
+
+
+
+
 
 # Filter and extract contigs and based on MEGAN LCA
 # Get contig IDs

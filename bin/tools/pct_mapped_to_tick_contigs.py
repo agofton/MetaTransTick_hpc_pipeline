@@ -30,12 +30,12 @@ num_unmapped_tax = df2.iloc[0, 0] - df2.iloc[4, 0]
 num_mapped_tax = num_reads_tax - num_unmapped_tax
 
 # Calc %
-pct = (num_mapped_host / num_mapped_all) * 100
+pct = (num_mapped_tax / num_mapped_all) * 100
 rnd_pct = round(pct, 2)
 
 # Print results
-print(args.host_bam)
+print(args.tax_flagstat)
 print("num_reads" + "\t" + "pct")
-print(str(num_mapped_host) + "\t" + str(rnd_pct) + "%")
+print(str(num_mapped_tax) + "\t" + str(rnd_pct) + "%")
 print("Number of reads mapped to whole assembly: " + str(num_mapped_all))
 
