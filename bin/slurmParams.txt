@@ -2,150 +2,86 @@
 
 # Alexander W. Gofton. 2020, CSIRO, alexander.gofton@gmail.com; alexander.gofton@csiro.au
 
-###################################
-### SCRIPTS FOR EACH SUBPROCESS ###
-###################################
-
-# run.sh job listing
-qc="QC.SAMPLEID.slurm.sh"
-derep="derep.SAMPLEID.slurm.sh"
-trinP1="trinityPhase1.SAMPLEID.slurm.sh"
-trinP2="trinityPhase2.SAMPLEID.slurm.sh"
-trinP3="trinityPhase3.SAMPLEID.slurm.sh"
-blastnTrin="blastn.SAMPLEID.slurm.sh"
-diamTrin="diamond_daa.SAMPLEID.slurm.sh"
-diamTrin2="diamond_tab.SAMPLEID.slurm.sh"
-concov="contig_coverage_TPM.SAMPLEID.slurm.sh"
-
-#############################
-### FILES AND DIRECTORIES ###
-#############################
-
-# QC.slurm.sh
-qcDir="../QC"
-in1="../SAMPLEID_R1.fastq.gz"
-in2="../SAMPLEID_R2.fastq.gz"
-cutOut1="${qcDir}/SAMPLEID_R1.cutadapt.fastq.gz"
-cutOut2="${qcDir}/SAMPLEID_R2.cutadapt.fastq.gz"
-trimSum="${qcDir}/SAMPLEID.trimmomatic.summary"
-trimPEr1="${qcDir}/SAMPLEID_R1.QC.paired.fastq.gz"
-trimUPr1="${qcDir}/SAMPLEID_R1.QC.unpaired.fastq.gz"
-trimPEr2="${qcDir}/SAMPLEID_R2.QC.paired.fastq.gz"
-trimUPr2="${qcDir}/SAMPLEID_R2.QC.unpaired.fastq.gz"
-
-# derep.slurm.sh
-int="${qcDir}/SAMPLEID.derep.interleaved.fastq.gz"
-derepOut1="${qcDir}/SAMPLEID_R1.derep.fastq.gz"
-derepOut2="${qcDir}/SAMPLEID_R2.derep.fastq.gz"
-derepFQCoutDir="${qcDir}/fastqc_derep"
-
-# trinity_P1.slurm.sh
-trinOutDir="../SAMPLEID_trinity_out"
-
-# trinity_P2.slurm.sh
-arrayFile="trinP2InputArray.txt"
-
-# trinity_P3.slurm.sh
-trinFasta="../SAMPLEID.trinity.fasta"
-id="SAMPLEID"
-
-# blast_trin.slurm.sh
-blastDir="../blastN"
-database_nt="/data/bioref/blast/ncbi/nt"
-trinIn="../SAMPLEID.trinity.fasta"
-archive="${blastDir}/SAMPLEID.trinity.ASN.1"
-outfmt0="${blastDir}/SAMPLEID.trinity.blast"
-outfmt6="${blastDir}/SAMPLEID.trinity.blast.txt"
-topHits="${blastDir}/SAMPLEID.trinity.blast.topHits.txt"
-
-# diam_trin.slurm.sh
-diamDir="../diamond"
-database_nr="/data/bioref/diamond_db/nr_191112_v0928.dmnd"
-diamOut="${diamDir}/SAMPLEID.trinity.diamond.daa"
-diamTabOut="${diamDir}/SAMPLEID.trinity.diamond.txt"
-diamTopHits="${diamDir}/SAMPLEID.trinity.diamond.topHits.txt"
-
-# contig_cov.slurm.sh
-conCovOutDir="../SAMPLEID_bt2_contig_cov"
-trinFasta="../SAMPLEID.trinity.fasta"
-bt2index="${conCovOutDir}/SAMPLEID.trinity.bt2index"
-samOut="${conCovOutDir}/SAMPLEID_bt2.sam"
-samSorted="${conCovOutDir}/SAMPLEID_bt2_sorted.sam"
-covSum="${conCovOutDir}/SAMPLEID_bt2_mapping_stats.txt"
-samFlagstat="${conCovOutDir}/SAMPLEID_bt2.flagstat.txt"
-
 ################# SLURM PARAMETERS #############################################
 # QC.slurm.sh
-qcJobName=qcSAMPLEID 											# must contain SAMPLEID
-qcLog=../logs/QC_SAMPLEID_%A.slurm.log 		# must contain SAMPLEID
-qcNodes=1
-qcTasks=1
-qcCPUsPerTask=20
-qcMem=128GB
-qcTime=03:00:00
+qc_jobName=qc_SAMPLEID
+qc_log=../logs/QC_SAMPLEID_%A.slurm.log
+qc_nodes=1
+qc_tasks=1
+qc_cpus=20
+qc_mem=128GB
+qc_time=06:00:00
 
 # derep.slurm.sh
-drJobName=drSAMPLEID 											# must contain SAMPLEID
-drLog=../logs/dr_SAMPLEID_%A.slurm.log 		# must contain SAMPLEID
-drNodes=1
-drTasks=1
-drCPUsPerTask=20
-drMem=2999GB
-drTime=06:00:00
+derep_jobName=dr_SAMPLEID 
+derep_log=../logs/derep_SAMPLEID_%A.slurm.log
+derep_nodes=1
+derep_tasks=1
+derep_cpus=20
+derep_mem=512GB
+derep_time=06:00:00
 
-# trinity_P1.slurm.sh
-t1JobName=t1SAMPLEID 												# must contain SAMPLEID
-t1Log=../logs/trin1_SAMPLEID_%A.slurm.log		# must contain SAMPLEID
-t1Nodes=1
-t1Tasks=48
-t1Mem=2999GB
-t1Time=32:00:00
-nChunks=10 																		# number of job for Trinity Phase 2
+# trinityP1.slurm.sh
+trinP1_jobName=T1_SAMPLEID
+trinP1_log=../logs/trinP1_SAMPLEID_%A.slurm.log
+trinP1_nodes=1
+trinP1_tasks=20
+trinP1_mem=512GB
+trinP1_time=36:00:00
+nChunks=20
 # no CPUs-per-task for this command
 
-# trinity_P2.slurm.sh
-t2JobName=t2SAMPLEID 													# must contain SAMPLEID
-t2Log=../logs/trin2_SAMPLEID_%A_%a.slurm.log 	# must contain SAMPLEID
-t2Nodes=1
-t2Tasks=1
-t2CPUsPerTask=20
-t2Mem=128GB
-t2Time=24:00:00
-t2Arrays="0-$((nChunks - 1))" 									# do not edit
+# trinityPhase2.slurm.sh
+trinP2_jobName=T2_SAMPLEID
+trinP2_log=../logs/trinP2_SAMPLEID_%A_%a.slurm.log
+trinP2_nodes=1
+trinP2_tasks=1
+trinP2_cpus=20
+trinP2_mem=128GB
+trinP2_time=24:00:00
+trinP2_array="0-$((nChunks - 1))"
 
-# trinity_P3.slurm.sh
-t3JobName=t3SAMPLEID 												# must contain SAMPLEID
-t3Log=../logs/trin3_SAMPLEID_%A.slurm.log 	# must contain SAMPLEIS
-t3Nodes=1
-t3Tasks=1
-t3CPUsPerTask=1
-t3Mem=16GB
-t3Time=12:00:00
+# trinityPhase3.slurm.sh
+trinP3_jobName=T3_SAMPLEID
+trinP3_log=../logs/trinP3_SAMPLEID_%A.slurm.log 
+trinP3_nodes=1
+trinP3_tasks=1
+trinP3_cpus=1
+trinP3_mem=16GB
+trinP3_time=12:00:00
 
-# blast_trin.slurm.sh
-blastJobName=bnSAMPLEID 												# must contain SAMPLEID
-blastLog=../logs/blastN_SAMPLEID_%A.slurm.log 	# must contain SAMPLEID
-blastNodes=1
-blastTasks=1
-blastCPUsPerTask=20
-blastMem=100GB
-blastTime=48:00:00
+# blastn.slurm.sh
+blastn_jobName=blN_SAMPLEID 
+blastn_log=../logs/blastn_SAMPLEID_%A.slurm.log 
+blastn_nodes=1
+blastn_tasks=1
+blastn_cpus=20
+blastn_mem=100GB
+blastn_time=48:00:00
 
-# diam_trin.slurm.sh
-diamJobName=bxSAMPLEID 												# must contain SAMPLEID
-diamLog=../logs/diamond_SAMPLEID_%A.slurm.log 	# must contain SAMPLEID
-diam2Log=../logs/diamond2_SAMPLEID_%A.slurm.log
-diamNodes=1
-diamTasks=1
-diamCPUsPerTask=20
-diamMem=100GB
-diamTime=24:00:00
+# diamond_daa.slurm.sh
+diamond_daa_jobName=diDAA_SAMPLEID 		
+diamond_daa_log=../logs/diamond_daa_SAMPLEID_%A.slurm.log 	
+diamond_daa_nodes=1
+diamond_daa_tasks=1
+diamond_daa_cpus=20
+diamond_daa_mem=100GB
+diamond_daa_time=24:00:00
+
+# diamond_tab.slurm.sh
+diamond_tab_jobName=diTab_SAMPLEID 		
+diamond_tab_log=../logs/diamond_tab_SAMPLEID_%A.slurm.log 	
+diamond_tab_nodes=1
+diamond_tab_tasks=1
+diamond_tab_cpus=20
+diamond_tab_mem=100GB
+diamond_tab_time=24:00:00
 
 # contig_cov.slurm.sh
-concovJobName=ccovSAMPLEID 												# must contain SAMPLEID
-concovLog=../logs/contig_coverage_SAMPLEID_%A.slurm.log 	# must contain SAMPLEID
-concovNodes=1
-concovTasks=1
-concovCPUsPerTask=20
-concovMem=128GB
-concovTime=24:00:00
+bt2_jobName=bt2_SAMPLEID 			
+bt2_log=../logs/bt2_SAMPLEID_%A.slurm.log 
+bt2_nodes=1
+bt2_tasks=1
+bt2_cpus=20
+bt2_mem=128GB
+bt2_time=24:00:00

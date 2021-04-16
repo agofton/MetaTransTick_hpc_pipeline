@@ -44,7 +44,7 @@ pct_ass_contigs = (nass / ntot) * 100
 rounded_pct_ass_contigs = round(pct_ass_contigs, 2)
 
 # Print results as df
-results_list = [{"Trinity_contigs": ntot, "Assigned_contig": nass, "pct_assigned_contig": rounded_pct_ass_contigs, str(args.tax) + "_countigs": ntax, "pct_" + str(args.tax) + "_contigs": rounded_pct_tax, str(args.tax) + "_mapped_reads": nmapped_tax, "pct_" + str(args.tax) + "_mapped_reads": rounded_pct_mapped}]
+results_list = [{"Trinity_contigs": ntot, "Assigned_contig": nass, "pct_assigned_contig": rounded_pct_ass_contigs, str(args.tax) + "_contigs": ntax, "pct_" + str(args.tax) + "_contigs": rounded_pct_tax, str(args.tax) + "_mapped_reads": nmapped_tax, "pct_" + str(args.tax) + "_mapped_reads": rounded_pct_mapped}]
 results_df = pd.DataFrame(results_list)
 print(results_df.to_string(index = False))
 results_df.to_csv(args.out, sep = "\t", header = True, index = False)

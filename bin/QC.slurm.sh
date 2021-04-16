@@ -1,6 +1,7 @@
 #!/bin/bash
 date
 source slurmParams.txt
+source script_vars.txt
 
 errorExit() {
 	if [ $? -ne 0 ]; then
@@ -43,7 +44,7 @@ trimmomatic PE \
 	-threads ${SLURM_CPUS_PER_TASK} \
 	-summary ${trimSum} \
 	${cutOut1} ${cutOut2} \
-	${trimPEr1} ${trimUPr1} ${trimPEr2} ${trimUPr2} \
+	${trimPE_R1} ${trimUP_R1} ${trimPE_R2} ${trimUP_P2} \
 	SLIDINGWINDOW:5:15 MINLEN:30
 
 errorExit "TRIMMOMATIC failed: ${cutOut1}, ${cutOut2}"
@@ -55,29 +56,29 @@ fastqc \
 	--outdir ${qcDir}/fastqc_QC \
 	--format fastq \
 	--threads ${SLURM_CPUS_PER_TASK} \
-	${trimPEr1} ${trimPEr2} ${trimUPr1} ${trimUPr2}
+	${trimPE_R1} ${trimPE_R2} ${trimUP_R1} ${trimUP_P2}
 
-errorExit "FASTQC failed: ${trimPEr1}, ${trimPEr2}, ${trimUPr1}, ${trimUPr2}"
-echo "FastQC finished sucessfully: ${trimPEr1}, ${trimPEr2}, ${trimUPr1}, ${trimUPr2}"
+errorExit "FASTQC failed: ${trimPE_R1}, ${trimPE_R2}, ${trimUP_R1}, ${trimUP_P2}"
+echo "FastQC finished sucessfully: ${trimPE_R1}, ${trimPE_R2}, ${trimUP_R1}, ${trimUP_P2}"
 
 # Reporting number of reads at each step
-countIn1=$(zcat ${in1} | grep -c "^+")
-countIn2=$(zcat ${in2} | grep -c "^+")
-countCutOut1=$(zcat ${cutOut1} | grep -c "^+")
-countCutOut2=$(zcat ${cutOut2} | grep -c "^+")
-countTrimPEr1=$(zcat ${trimPEr1} | grep -c "^+")
-countTrimPEr2=$(zcat ${trimPEr2} | grep -c "^+")
-countTrimUPr1=$(zcat ${trimUPr1} | grep -c "^+")
-countTrimUPr2=$(zcat ${trimUPr2} | grep -c "^+")
+count_in1=$(zcat ${in1} | grep -c "^+")
+count_in2=$(zcat ${in2} | grep -c "^+")
+count_cutOut1=$(zcat ${cutOut1} | grep -c "^+")
+count_cutOut2=$(zcat ${cutOut2} | grep -c "^+")
+count_trimPE_R1=$(zcat ${trimPE_R1} | grep -c "^+")
+count_trimPE_R2=$(zcat ${trimPE_R2} | grep -c "^+")
+count_trimUP_R1=$(zcat ${trimUP_R1} | grep -c "^+")
+count_trimUP_R2=$(zcat ${trimUP_P2} | grep -c "^+")
 
 echo "# reads in inputs and outputs."
-echo "${in1}: ${countIn1}"
-echo "${in2}: ${countIn2}"
-echo "${cutOut1}: ${countCutOut1}"
-echo "${cutOut2}: ${countCutOut2}"
-echo "${trimPEr1}: ${countTrimPEr1}"
-echo "${trimPEr2}: ${countTrimPEr2}"
-echo "${trimUPr1}: ${countTrimUPr1}"
-echo "${trimUPr2}: ${countTrimUPr2}"
+echo "${in1}: ${count_in1}"
+echo "${in2}: ${count_in2}"
+echo "${cutOut1}: ${count_cutOut1}"
+echo "${cutOut2}: ${count_cutOut2}"
+echo "${trimPE_R1}: ${count_trimPE_R1}"
+echo "${trimPE_R2}: ${count_trimPE_R2}"
+echo "${trimUP_R1}: ${count_trimUP_R1}"
+echo "${trimUP_P2}: ${count_trimUP_R2}"
 
 date

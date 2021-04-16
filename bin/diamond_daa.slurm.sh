@@ -1,7 +1,7 @@
 #!/bin/bash
 date
-
 source slurmParams.txt
+source script_vars.txt
 
 errorExit() {
 	if [ $? -ne 0 ]; then
@@ -19,14 +19,14 @@ diamond blastx \
 	--db ${database_nr} \
 	--out ${diamOut} \
 	--outfmt 100 \
-	--query ${trinIn} \
+	--query ${trinFasta} \
 	--strand both \
 	--max-target-seqs 100 \
 	--evalue 0.000000001 \
 	--sensitive \
 	--min-orf 80
 
-errorExit "diamond failed: ${trinIn}"
-echo "diamond finished sucessfully: ${trinIn}"
+errorExit "diamond failed: ${trinFasta}"
+echo "diamond finished sucessfully: ${trinFasta}"
 
 date

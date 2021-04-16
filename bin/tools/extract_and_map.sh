@@ -56,6 +56,7 @@ done
 shift $((OPTIND - 1))
 
 printf "\n"
+printf "${ORANGE}###############"
 
 printf "${BLUE}Finding ${TAX} contigs IDs in ${LCA} ...\n"
 awk -F "\t" '{print $1, $2, $3}' ${LCA} | grep ${TAX} | awk -F " " '{print $1}' > ${SEQIDS}
@@ -65,11 +66,9 @@ printf "${GREEN}${TAX} contig IDs written to ${SEQIDS} \n"
 
 NSEQ=$(cat ${SEQIDS} | wc -l)
 if [[ ${NSEQ} -eq 0 ]]; then
-	printf "${RED}No ${TAX} contigs in ${TRIN_FASTA}!\n"
-	exit 0
+	rm -f ${SEQIDS} && printf "${RED}No ${TAX} contigs in ${TRIN_FASTA}!\n" && exit 0
 else
 	printf "${ORANGE}${TAX} contigs: ${NSEQ} \n"
-	printf "${NC}\n"
 fi
 
 printf "${BLUE}Extracting ${TAX} contigs from ${TRIN_FASTA}...${NC} \n"
@@ -80,19 +79,24 @@ printf "${GREEN}Extracting ${TAX} contigs from ${TRIN_FASTA} complete... "
 printf "${GREEN}${TAX} contigs writen to ${CONTIGS}. \n"
 
 printf "${BLUE}Extracting contigs from ${SAM}... \n"
-grep -f ${SEQIDS} ${SAM} > ${TAX_SAM}	
+grep -f ${SEQIDS} ${SAM} > ${TAX_SAM}.tmp	
 errorExit "Extracting ${TAX} contig alignments from ${SAM} failed!"
 printf "${GREEN}${TAX} contigs extracting from ${SAM}."
 printf "${GREEN}${TAX} contigs written to ${TAX_SAM}. \n"
 
+printf "${BLUE}Sorting .sam file..."
+samtools sort -@ 8 ${TAX_SAM}.tmp > ${TAX_SAM} && rm -f ${TAX_SAM}.tmp
+errorExit "Samtools sort failed!"
+printf "${GREEN}Samtools sort complete.\n"
+
 printf "${BLUE}Calculating mapping stats with samtools and python ... \n"
-samtools flagstat -@ 8 ${TAX_SAM} > ${TAX_SAM_FLAGSTAT} 2> /dev/null # Std error redirected to /dev/nul to silence verbose output to screen
+samtools flagstat -@ 8 ${TAX_SAM} > ${TAX_SAM_FLAGSTAT}.tmp 2> /dev/null # Std error redirected to /dev/nul to silence verbose output to screen
 errorExit "Samtools flagstat failed!"
-printf "${GREEN}Samtools flagstat complete."
+printf "${GREEN}Samtools flagstat complete..."
 printf "${GREEN}${TAX_SAM_FLAGSTAT} written."
 printf "${NC}\n"
 
-# Calcs in python
+#Calcs in python
 /data/hb-austick/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/tools/tax_mapping_pct.py \
 	-t ${TRIN_FASTA} -l ${LCA} -f ${CONTIGS} -x ${TAX_SAM_FLAGSTAT} -y ${TRIN_FLAGSTAT} -z ${TAX} -o ${OUT}
 

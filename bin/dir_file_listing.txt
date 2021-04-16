@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Directory structure for meta-transcriptomics workflow on slurm
+

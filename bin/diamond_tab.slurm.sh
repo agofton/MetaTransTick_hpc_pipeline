@@ -1,9 +1,10 @@
 #!/bin/bash
 date
 source slurmParams.txt
+source script_vars.txt
 
 errorExit() {
-	if [ $? -ne 0 ]; then
+	if [[ $? -ne 0 ]]; then
 		echo $1; date; exit 1
 	fi
 }
@@ -18,20 +19,18 @@ diamond blastx \
 	--db ${database_nr} \
 	--out ${diamTabOut} \
 	--outfmt 6 qseqid sscinames sseqid stitle staxids pident length mismatch gapopen qstart qend sstart send evalue bitscore \
-	--query ${trinIn} \
+	--query ${trinFasta} \
 	--strand both \
 	--max-target-seqs 100 \
 	--evalue 0.000000001 \
 	--sensitive \
 	--min-orf 80
 
-errorExit "diamond failed: ${trinIn}"
-echo "diamond finished sucessfully: ${trinIn}"
+errorExit "diamond failed: ${trinFasta}"
+echo "diamond finished sucessfully: ${trinFasta}"
 
 # take top hits only
-
 awk '!a[$1]++' ${diamTabOut} > ${diamTopHits}
-
 errorExit "Generating top hits filed ${diamTopHits}"
 
 date

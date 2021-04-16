@@ -1,6 +1,7 @@
 #!/bin/bash
 date
 source slurmParams.txt
+source script_vars.txt
 
 errorExit() {
 	if [ $? -ne 0 ]; then
@@ -29,8 +30,8 @@ Trinity \
 	--CPU ${SLURM_NTASKS} \
 	--min_contig_length 200 \
 	--output ${trinOutDir} \
-	--no_normalize_reads \
-	--no_distributed_trinity_exec
+	--no_distributed_trinity_exec \
+	--no_normalize_reads
 
 errorExit "Trinity failed: ${derepOut1}, ${derepOut2}" 
 echo "Trinity finished sucessfully: ${derepOut1}, ${derepOut2}"
@@ -56,6 +57,12 @@ errorExit "Splitting recursive_trinity.cmds failed."
 # 	recursive_trinity.cmds.chunk.01
 # 	recursive_trinity.cmds.chunk.02
 #   recursive_trinity.cmds.chunk.03
-# 	etc...
+#   recursive_trinity.cmds.chunk.04
+#   recursive_trinity.cmds.chunk.05
+#   recursive_trinity.cmds.chunk.06
+#   recursive_trinity.cmds.chunk.07
+#   recursive_trinity.cmds.chunk.08
+#   recursive_trinity.cmds.chunk.09
+#	etc...
 
 date

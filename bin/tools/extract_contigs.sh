@@ -5,68 +5,64 @@
 errorExit() {
 	if [[ $? -ne 0 ]]; then
 		echo $1; date; exit 1
-	else
-		echo $2
 	fi
 }
 
-hmessage="Script searches for a taxon key word (eg. Bacteria) in the lca_summary file (output of contig_lca_sum.py), extract contigs that match that taxon key word."
-usage="Usage: $(basename "$0") -l lca_sum.txt -z taxon to search -s sample ID -t trinity.fasta -o output directory (output files will be names with -s sample ID)."
-
+hmessage() {
+	echo "Script searches for a taxon key word (eg. Bacteria) in a tab_separated lca summary file and extract contigs that match that taxon key word."
+}
+usage() {
+	echo """Usage: $(basename "$0") 
+	-l <lca_sum.txt> 
+	-z <taxon to search> 
+	-t <trinity.fasta> 
+	-o <output .fasta file>
+	-h [how this message]"
+	< > = required, [ ] = optional
+}
 
 # Default params go here
-THREADS=8
+threads=8
+usearch=usearch9.2_linux64
 
 ### Command line arguments ###
 while getopts hl:z:s:t:o: option; do
         case "${option}" in
-        	h) echo "$hmessage"
-              echo "$usage"
-              exit;;
-        	l) LCA=$OPTARG;;
-        	z) TAX=$OPTARG;;
-        	s) SAMID=$OPTARG;;
-        	t) FASTA=$OPTARG;;
-			o) OUT=$OPTARG;;
+        	h) hmessage ; usage ; exit 0 ;;
+        	l) lca=$OPTARG;;
+        	z) tax=$OPTARG;;
+        	t) fasta=$OPTARG;;
+			o) fastaOut=$OPTARG;;
         esac
 done
 shift $((OPTIND - 1))
 
-echo ""
-mkdir ${OUT}
-
 # Find and extract contigs 
-echo "Finding ${TAX} contigs in ${LCA} with grep..."
+echo ""
+echo "Finding ${tax} contigs in ${lca} with grep..."
 
-	RND=${RANDOM}
-	TMP=tmp_${RND}_${SAMID}_${TAX}.txt
-	awk -F "\t" '{print $1, $2, $3}' ${LCA} > ${TMP}
-	errorExit "awk failed!" ""
-
-	SEQIDS=${OUT}/${SAMID}_${TAX}_contigs.seqIDs.txt
-	grep ${TAX} ${TMP} | awk -F " " '{print $1}' > ${SEQIDS}
+	seqIDs=$(basename $fasta .fasta).seqIDs.txt
+	grep ${tax} ${lca} | awk -F "\t" '{print $1}' > ${seqIDs}
 	errorExit "grep failed!" ""
 
 	# Check num contigs
-	n_contigs=$(awk -F "\t" '{print $1, $2, $3}' ${LCA} | grep ${TAX} ${TMP} | wc -l)
-	echo "Number of ${TAX} contigs: ${n_contigs}."
-	echo ""
-	
-	if [[ ${n_contigs} = "0" ]]; then
-		rm -f ${TMP}
-		rm -f ${SEQIDS}
-		exit 0
-		date
-	fi
+	n_contigs=$(wc -l ${seqIDs})
 
-	rm -f ${TMP}
-	errorExit "Searching for ${TAX} contigs in ${LCA} failed!" "Searching for ${TAX} contigs in ${LCA} complete."
+	if [[ ${n_contigs} -eq "0" ]]; then
+		echo "Number of ${tax} contigs = 0, exiting script."
+		rm -f ${seqIDs}
+		exit 0
+	else
+		echo "Number of ${tax} contigs: ${n_contigs}."
+		echo ""
+	fi
 	
 echo ""
-echo "Extracting ${TAX} contigs from ${FASTA}..."
+echo "Extracting ${tax} contigs from ${fasta}..."
 
-	TAXCONTIGS=${OUT}/${SAMID}_${TAX}_contigs.fasta
-	usearch9.2_linux64 -fastx_getseqs ${FASTA} -labels ${SEQIDS} -fastaout ${TAXCONTIGS}
-	errorExit "Extracting ${TAX} contigs from ${FASTA} failed!" "Extracting ${TAX} contigs from ${FASTA} complete."
+	${usearch} -fastx_getseqs ${fasta} -labels ${seqIDs} -fastaout ${fastaOut}
+	errorExit "Extracting ${tax} contigs from ${fasta} failed!" "Extracting ${tax} contigs from ${fasta} complete."
 
-date
+
+
+

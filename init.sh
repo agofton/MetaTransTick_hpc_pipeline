@@ -1,37 +1,21 @@
 #!/bin/bash
-
-# Alexander W. Gofton CSIRO, 2021, alexander.gofton@gmail.com; alexander.gofton@csiro.au
-
-# Text colors
-BLACK='\033[0;01m'
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-ORANGE='\033[0;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-GRAY='\033[0;37m'
-NC='\033[0m' # No Color (White)
+date
 
 helpMessage() {
-	printf "${ORANGE}./init.sh usage: \n"
-	printf "${ORANGE}-f <sample_x_R1.fastq.gz> raw input R1 file \n"
-	printf "${ORANGE}-r <sample_x_R2.fastq.gz> raw input R1 file \n" 
-	printf "${ORANGE}-o <output_folder> all output will go here under a new directoy labeled by the sample ID \n"
-	printf "${ORANGE}-h [show this message] \n"
-	printf "${ORANGE}<> = manditory argument, [] = optional argument \n"
-	printf "\n"
-	printf "${ORANGE}This script initialises all downstream slurm processes and directories needed for trascriptome assembly and homology-based taxonomic assignment of transcripts. Assumes input files are in the format: sample_xxx_R1.fastq.gz & sample_xxx_R2.fastq.gz, where 'sample_xxx_' can be whatever samples ID you want (The sample ID is defined as anything preceeding '_R1' and '_R2'. This sample ID will be carried through the whole analysis and appended onto the transcript IDs - so make sure it is not too long. Best to use complete paths so that nothing stuffs up! \n"
-	printf "${NC}"
-	date
-	exit 0
+	echo "./init.sh usage:"
+	echo "-f <sample_x_R1.fastq.gz> raw input R1 file"
+	echo "-r <sample_x_R2.fastq.gz> raw input R1 file" 
+	echo "-o <output_folder> all output will go here under a new directoy labeled by the sample ID"
+	echo "-h [show this message]"
+	echo "< > = manditory argument, [  ] = optional argument"
+	echo ""
+	echo "This script initialises all downstream slurm processes and directories needed for trascriptome assembly and homology-based taxonomic assignment of transcripts. Assumes input files are in the format: sample_xxx_R1.fastq.gz & sample_xxx_R2.fastq.gz, where 'sample_xxx_' can be whatever samples ID you want (The sample ID is defined as anything preceeding '_R1' and '_R2'. This sample ID will be carried through the whole analysis and appended onto the transcript IDs - so make sure it is not too long. Best to use complete paths so that nothing stuffs up!"
+	date ; exit 0
 }
 
 errorExit() {
 	if [[ $? -ne 0 ]]; then
-		printf "${RED}${1} /n"
-		date
-		exit 1
+		echo $1 ; date ; exit 1
 	fi
 }
 
@@ -43,96 +27,84 @@ do
 	        h) helpMessage;;
 	        f) R1=${OPTARG};;
 	        r) R2=${OPTARG};;
-			o) OUTPUT_DIR=${OPTARG};;
-			/?) printf "${RED}Invalid option: -$OPTARG" 1>&2
-
+			o) outDir=${OPTARG};;
+			/?) echo "Invalid option: -$OPTARG" 1>&2
 	esac
 done
 shift $((OPTIND - 1))
 
-date
-
-# Checking that R1 and R2 input files exist.
+### Checking that R1 and R2 input files exist.
 if [ ! -f "${R1}" ]; then
 	errorExit "Error: Input R1 file does not exist."
-fi
-if [ ! -f "${R2}" ]; then
+elif [ ! -f "${R2}" ]; then
 	errorExit "Error: Input R2 file does not exits."
 fi
 
-# Checking that R1 & R2 are not the same file.
+### Checking that R1 & R2 are not the same file.
 if [ "${R1}" == "${R2}" ]; then
 	errorExit "Input error: -f and -r cannot be the same."
 fi
 
-# Checking if OUTPUT_DIR already exists - will not overwrite existing directory.
-if [ -d "${OUTPUT_DIR}" ]; then
+### Checking if OUTPUT_DIR already exists - will not overwrite existing directory.ß
+if [ -d "${outDir}" ]; then
 	errorExit "Error: Output directory already exists. Cannot overwrite."
 fi
 
-# Get sampleID from R1 input file (Any string before 1st underscore).
-SAMPLE_ID=$(basename ${R1} _R1.fastq.gz)
-	printf "${GREEN}SampleID = ${SAMPLE_ID} \n"
-	printf "${NC}"
+### Get sampleID from R1 input file (Any string before 1st underscore).
+sampleID=$(basename ${R1} _R1.fastq.gz)
+echo "SampleID = ${sampleID}"
 
-# Setting up direcory structure.
-OUT_DIR=${OUTPUT_DIR}/${SAMPLE_ID} 	# All output goes here
-SCRIPTS_DIR=${OUT_DIR}/scripts 		# Scripts are stored and launched from here
-mkdir -p ${OUT_DIR}
-mkdir ${SCRIPTS_DIR}
-mkdir ${OUT_DIR}/logs 				# All slurm log files will go here
+### Setting up direcory structure.
+wrkDir=${outDir}/${sampleID} 			# All output goes here
+scriptsDir=${wrkDir}/scripts 		# Scripts are stored and launched from here
+mkdir -p ${wrkDir}
+mkdir ${scriptsDir}
+mkdir ${wrkDir}/logs 				# All slurm log files will go here
 
-# Copy raw data to working directory.
-cp ${R1} ${OUT_DIR} 
-	
-	errorExit "Copying ${R1} to ${OUT_DIR} failed."
-	printf "${GREEN}${R1} copied to working dir: ${OUT_DIR} \n"
+### Copy raw data to working directory.
+cp ${R1} ${wrkDir} 
+errorExit "Copying ${R1} to ${wrkDir} failed." ; echo "${R1} copied to working dir: ${wrkDir}"
 
-cp ${R2} ${OUT_DIR}
-	
-	errorExit "Copying ${R2} to ${OUT_DIR} failed."
-	printf "${GREEN}${R2} copied to working dir: ${OUT_DIR} \n"
+cp ${R2} ${wrkDir}
+errorExit "Copying ${R2} to ${wrkDir} failed." ; echo "${R2} copied to working dir: ${wrkDir}"
 
-SLURM_SCRIPTS=/datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/*.slurm.sh
-# Copy analysis scripts to working directory.
-for FILE in ${SLURM_SCRIPTS}
-do
-	NEW_FILE_NAME=$(basename $FILE .slurm.sh).${SAMPLE_ID}.slurm.sh
-	cp ${FILE} ${SCRIPTS_DIR}/${NEW_FILE_NAME}
-		
-		errorExit "Error: copying .slurm scripts to working directory failed."
-		printf "${GREEN}${NEW_FILE_NAME} copied to ${SCRIPTS_DIR}. \n"
+### Copy analysis scripts to working directory.
+masterScripts=/datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/*.slurm.sh
+
+for file in ${masterScripts}; do
+	newFileName=$(basename $file .slurm.sh).${sampleID}.slurm.sh
+	cp ${file} ${scriptsDir}/${newFileName}
+	errorExit "Error: copying .slurm scripts to working directory failed." ; echo "${newFileName} copied to ${scriptsDir}."
 done
 
-# Copy run.sh to working dir
-RUN_SCRIPT='/datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/run.sh'
-cp ${RUN_SCRIPT} ${SCRIPTS_DIR}/$(basename ${RUN_SCRIPT} .sh).${SAMPLE_ID}.sh
+### Copy run.sh to working dir
+runScripts='/datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/run.sh'
 
-	errorExit "Error: copying run.sh to working directory failed."
-	printf "${GREEN}run.sh copied to ${SCRIPTS_DIR} \n"
+cp ${runScripts} ${scriptsDir}/$(basename ${runScripts} .sh).${sampleID}.sh
+errorExit "Error: copying run.sh to working directory failed." ; echo "run.sh copied to ${scriptsDir}"
 
-# Copy slurmParams.txt to working dir and add universal variables
-SLURM_PARAMS='/datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/slurmParams.txt'
-cp ${SLURM_PARAMS} ${SCRIPTS_DIR}/slurmParams.txt
-	
-	errorExit "Error: copying slurmParams.txt to working directory failed."
-	printf "${GREEN}slurmParams.txt copied to ${SCRIPTS_DIR} \n."
+### Copy slurmParams.txt and script_vars.txt to working dir and add universal variables
+slurmParams='/datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/slurmParams.txt'
+cp ${slurmParams} ${scriptsDir}/slurmParams.txt
+errorExit "Error: copying slurmParams.txt to working directory failed." ; echo "slurmParams.txt copied to ${scriptsDir}"
+sed -i s@SAMPLEID@${sampleID}@g ${scriptsDir}/slurmParams.txt
+errorExit "Error: writing SAMPLEID variable to slurmParams.txt failed." ; echo "${sampleID} written to ${scriptsDir}/slurmParams.txt"
 
-sed -i s@SAMPLEID@${SAMPLE_ID}@g ${SCRIPTS_DIR}/slurmParams.txt
+scriptVars='/datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/script_vars.txt'
+cp ${scriptVars} ${scriptsDir}/script_vars.txt
+errorExit "Error: copying script_vars.txt to working directory failed." ; echo "script_vars.txt copied to ${scriptsDir}"
+sed -i s@SAMPLEID@${sampleID}@g ${scriptsDir}/script_vars.txt
+errorExit "Error: writing SAMPLEID variable to script_vars.txt failed." ; echo "${sampleID} written to ${scriptsDir}/script_vars.txt"
 
-	errorExit "Error: writing SAMPLEID variable to slurmParams.txt failed."
-	printf "${GREEN}${SAMPLE_ID} written to ${SCRIPTS_DIR}/slurmParams.txt \n"
+### Copy tools dir to working direcory.
+toolsDir='/datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/tools/*'
 
-# Copy tools dir to working direcory.
-TOOLS_DIR='/datasets/work/hb-austicks/work/Project_Phoenix/data/MetaTransTick_hpc_pipeline/bin/tools/*'
-mkdir ${SCRIPTS_DIR}/tools
-cp ${TOOLS_DIR} ${SCRIPTS_DIR}/tools/
-	
-	errorExit "Error: copying bin/tools/ to working directory failed."
-	printf "${GREEN}bin/tools copies to working directory. \n"
+mkdir ${scriptsDir}/tools
+cp ${toolsDir} ${scriptsDir}/tools/
+errorExit "Error: copying bin/tools/ to working directory failed." ; echo "bin/tools copies to working directory."
 
 # Final comments to stdout.
-printf "${BLUE}All output directories and analysis scripts created... \n"
-printf "${BLUE}To launch analysis run: \n"
-printf "${NC}cd ${OUT_DIR}/scripts && ./run.${SAMPLE_ID}.sh -m all \n"
+echo "All output directories and analysis scripts created..."
+echo "To launch analysis run:"
+echo "cd ${wrkDir}/scripts && ./run.${sampleID}.sh -m all"
 date

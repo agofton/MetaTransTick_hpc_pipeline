@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# Alexander W. Gofton. 2020, CSIRO, alexander.gofton@gmail.com; alexander.gofton@csiro.au
+
+# "SAMPLEID" must not be changed as it is recognized by sed and replaced with actual sample IDs during job setup.
+
+### SCRIPTS FOR EACH SUBPROCESS ###
+qc=QC.SAMPLEID.slurm.sh
+derep=derep.SAMPLEID.slurm.sh
+trinP1=trinityPhase1.SAMPLEID.slurm.sh
+trinP2=trinityPhase2.SAMPLEID.slurm.sh
+trinP3=trinityPhase3.SAMPLEID.slurm.sh
+blastn=blastn.SAMPLEID.slurm.sh
+diamond_daa=diamond_daa.SAMPLEID.slurm.sh
+diamond_tab=diamond_tab.SAMPLEID.slurm.sh
+bt2_mapping=bt2_mapping.SAMPLEID.slurm.sh
+
+### FILES AND DIRECTORIES ###
+# QC.slurm.sh
+qcDir=../QC
+in1=../SAMPLEID_R1.fastq.gz
+in2=../SAMPLEID_R2.fastq.gz
+cutOut1=${qcDir}/SAMPLEID_R1.cutadapt.fastq.gz
+cutOut2=${qcDir}/SAMPLEID_R2.cutadapt.fastq.gz
+trimSum=${qcDir}/SAMPLEID.trimmomatic.summary
+trimPE_R1=${qcDir}/SAMPLEID_R1.QC.paired.fastq.gz
+trimUP_R1=${qcDir}/SAMPLEID_R1.QC.unpaired.fastq.gz
+trimPE_R2=${qcDir}/SAMPLEID_R2.QC.paired.fastq.gz
+trimUP_R2=${qcDir}/SAMPLEID_R2.QC.unpaired.fastq.gz
+
+# derep.slurm.sh
+interleaved=${qcDir}/SAMPLEID.derep.interleaved.fastq.gz
+derepOut1=${qcDir}/SAMPLEID_R1.derep.fastq.gz
+derepOut2=${qcDir}/SAMPLEID_R2.derep.fastq.gz
+derep_fqc=${qcDir}/fastqc_derep
+
+# trinityPhase1.slurm.sh
+trinOutDir=../SAMPLEID_trinity_out
+
+# trinityPhase2.slurm.sh
+arrayFile=trinP2InputArray.txt
+
+# trinityPhase3.slurm.sh
+trinFasta=../SAMPLEID.trinity.fasta
+sample_id=SAMPLEID
+
+# blastn.slurm.sh
+blastDir=../blastN
+database_nt=/data/bioref/blast/ncbi/nt
+archive=${blastDir}/SAMPLEID.trinity.ASN.1
+outfmt0=${blastDir}/SAMPLEID.trinity.blast
+outfmt6=${blastDir}/SAMPLEID.trinity.blast.txt
+topHits=${blastDir}/SAMPLEID.trinity.blast.topHits.txt
+
+# diamond_daa.slurm.sh
+diamDir=../diamond
+database_nr=/data/bioref/diamond_db/nr_191112_v0928.dmnd
+diamOut=${diamDir}/SAMPLEID.trinity.diamond.daa
+
+# diamond_tab.slurm.sh
+diamTabOut=${diamDir}/SAMPLEID.trinity.diamond.txt
+diamTopHits=${diamDir}/SAMPLEID.trinity.diamond.topHits.txt
+
+# bt2.slurm.sh
+bt2OutDir=../SAMPLEID_bt2_contig_cov
+trinFasta=../SAMPLEID.trinity.fasta
+bt2index=${bt2OutDir}/SAMPLEID.trinity.bt2index
+bt2AlignStats=${bt2OutDir}/SAMPLEID.bt2.alignstats.txt
+bt2_sam=${bt2OutDir}/SAMPLEID.bt2.sam
+bt2SortedBam=${bt2OutDir}/SAMPLEID.bt2.sorted.bam 
+bt2TransSum=${bt2OutDir}/SAMPLEID.bt2.coverage.txt
+flagstat=${bt2OutDir}/SAMPLEID.bt2.flagstat.txt
+
+
+
+
+
+
+

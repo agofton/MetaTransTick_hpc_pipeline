@@ -1,16 +1,14 @@
 #!/bin/bash
 
 helpMessage() {
-	echo "$0 usage: -i <trinity output directory> -s <sampleID> -h [show this message]"
-	echo ""
+	echo "$0 usage: -i <trinity output directory> -s <SAMPLE_ID> -h [show this message]"
+	echo "< > = required args, [ ] = optional args"
 	exit 1
 }
 
 errorExit() {
-	if [ $? -ne 0 ]; then
-		echo $2; date; exit 1
-	else
-		echo $1; date
+	if [[ $? -ne 0 ]]; then
+		echo $1; date; exit 1
 	fi
 }
 
@@ -20,32 +18,39 @@ do
 	case "${option}"
 		in
 		h) helpMessage;; 
-		i) inputDir=${OPTARG};;
-		s) sampleID=${OPTARG};;
+		i) INPUT_DIR=${OPTARG};;
+		s) SAMPLE_ID=${OPTARG};;	
 	esac
 done
 shift $((OPTIND - 1))
+######################
+TRIN_PART_AGG=~/trinityrnaseq-v2.11.0/util/support_scripts/partitioned_trinity_aggregator.pl
+TRIN_GSM=~/trinityrnaseq-v2.11.0/Analysis/SuperTranscripts/Trinity_gene_splice_modeler.py
 
-####
-find ${inputDir}/read_partitions/ -name '*inity.fasta' | \
-~/trinityrnaseq-Trinity-v2.8.4/util/support_scripts/partitioned_trinity_aggregator.pl \
-		--token_prefix TRINITY_DN \
-		--output_prefix ${inputDir}/Trinity.tmp
+find ${INPUT_DIR}/read_partitions/ -name '*inity.fasta' | ${TRIN_PART_AGG} --token_prefix TRINITY_DN --output_prefix ${INPUT_DIR}/Trinity.tmp
+	errorExit "${TRIN_PART_AGG} failed :("
 
-errorExit \
-	"FIND complete, all trinity assemblies found and coalated :)" \
-	"FIND failed :("
+cp ${INPUT_DIR}/Trinity.tmp.fasta ${INPUT_DIR}/Trinity.fasta
+	errorExit "mv ${INPUT_DIR}/Trinity.fasta failed :(" 
 
-cd ${inputDir}
-mv Trinity.tmp.fasta ../${sampleID}.trinity.fasta
+${TRIN_GSM} --trinity_fasta ${INPUT_DIR}/Trinity.fasta
+	errorExit "${TRIN_GSM} failed :("
 
-errorExit \
-	"Trinity.fasta moved to its final resting place :)" \
-	"MV failed :("
+# copying output files and adding sample IDs
+cd ${INPUT_DIR}
 
-sed -i "s@TRINITY@${sampleID}_TRINITY@g" ../${sampleID}.trinity.fasta
+cp ${INPUT_DIR}/Trinity.fasta ../${SAMPLE_ID}.trinity.fasta
+	errorExit "cp ${SAMPLE_ID}.trinity.fasta failed :("
 
-errorExit \
-	"SED complete." \
-	"SED failed, trinity.fasta does not have sampleIDs"
-date
+cp ${INPUT_DIR}/Trinity.SuperTrans.fasta ../${SAMPLE_ID}.trinity.SuperTrans.fasta
+	errorExit "cp ${SAMPLE_ID}.trinity.SuperTrans.fasta failed :("
+
+sed -i "s@TRINITY@${SAMPLE_ID}_TRINITY@g" ../${SAMPLE_ID}.trinity.fasta
+	errorExit "sed ${SAMPLE_ID}.trinity.SuperTrans.fasta failed :("
+
+sed -i "s@TRINITY@${SAMPLE_ID}_TRINITY@g" ../${SAMPLE_ID}.trinity.SuperTrans.fasta
+	errorExit "sed ${SAMPLE_ID}.trinity.SuperTrans.fasta failed :("	
+
+echo ""
+echo "Trinity phase 3 complete `date`"
+echo ""

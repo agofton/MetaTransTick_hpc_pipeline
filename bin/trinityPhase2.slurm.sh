@@ -1,6 +1,7 @@
 #!/bin/bash
 date
 source slurmParams.txt
+source script_vars.txt
 
 errorExit() {
 	if [ $? -ne 0 ]; then
@@ -15,20 +16,19 @@ export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
 # Create array of input files
 ls -1 ${trinOutDir}/recursive_trinity.cmds.chunk.?? > ${arrayFile}
 
-inArray=( `cut -f 1 ${arrayFile}` );
+array=( `cut -f 1 ${arrayFile}` );
 
-if [ ! -z "$SLURM_ARRAY_TASK_ID" ]
-then
+# Launch array
+if [ ! -z "$SLURM_ARRAY_TASK_ID" ]; then
 	i=${SLURM_ARRAY_TASK_ID}
+	
 	/apps/trinity/2.8.4/trinity-plugins/BIN/ParaFly \
-		-c ${inArray[$i]} \
+		-c ${array[$i]} \
 		-CPU ${SLURM_CPUS_PER_TASK} \
 		-v -shuffle
-
-	errorExit "ParaFly failed: ${inArray[$i]}"
-	echo "ParaFly Complete: ${inArray[$i]}"
+	
+	errorExit "ParaFly failed: ${array[$i]}"
+	echo "ParaFly Complete: ${array[$i]}"
 else
 	echo "Error: missing array index as SLURM_ARRAY_TASK_ID"
 fi
-
-date

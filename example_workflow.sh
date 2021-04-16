@@ -62,16 +62,18 @@ bowtie2-build --threads ${SLURM_CPUS_PER_TASK} \
 			  --quiet \
 			  ${trinFasta} ${bt2index}
 
-bowtie2 -p ${SLURM_CPUS_PER_TASK} \
+bowtie2 -p ${threads} \
 		-x ${bt2index} \
-		-1 ${derepOut1} -2 ${derepOut2} \
-		-S ${samOut} --fast
+		-1 ${derepOut1} \
+		-2 ${derepOut2} \
+		--no-unal \
+		2> ${align_stats} | \
+				samtools vew -@ ${threads} -Sb | \
+				samtools sort -@ ${threads} > ${sortedBam}
 
-samtools sort -@ ${SLURM_CPUS_PER_TASK} ${samOut} > ${samSorted}
+samtools coverage ${sortedBam} > ${covSum}
 
-samtools coverage ${samSorted} > ${covSum}
-
-samtools flagstat -@ ${SLURM_CPUS_PER_TASK} ${samSorted} > ${samFlagstat}
+samtools flagstat -@ ${threads} ${sortedBam} > ${sortedBamFlagstats}
 
 # Calculate TPM in python
 function TPM_calc {

@@ -1,6 +1,7 @@
 #!/bin/bash
 date
 source slurmParams.txt
+source script_vars.txt
 
 errorExit() {
 	if [ $? -ne 0 ]; then
@@ -16,7 +17,7 @@ mkdir ${blastDir}
 # Blast and write blast archive .ASN.1
 blastn \
 	-task megablast \
-	-query ${trinIn} \
+	-query ${trinFasta} \
 	-db ${database_nt} \
 	-out ${archive} \
 	-strand both \
@@ -48,15 +49,15 @@ errorExit "Writing tabular output failed: ${outfmt6}"
 echo "Tabular output written: ${outfmt6}"
 
 # Writing top hits only
-cat ${outfmt6} | awk '!a[$1]++' > ${topHits}
+cat ${outfmt6} | awk '!a[$1]++' > ${TOPHITS}
 
 # counting number of hits - this could also be done by counting number of uniq seqIDs in $outfmt6
-numnohits=$(grep -c "No hits found" ${outfmt0})
-numqueries=$(grep -c "^>" ${trinIn})
-num_hits=$[numqueries-numnohits]
+NUM_NO_HITS=$(grep -c "No hits found" ${outfmt0})
+NUM_QUERIES=$(grep -c "^>" ${trinFasta})
+NUM_HITS=$[NUM_QUERIES-NUM_NO_HITS]
 echo "Number of reads with blast hits:"
-echo "${outfmt0}: ${num_hits}"
+echo "${outfmt0}: ${NUM_HITS}"
 numHits=$(awk '{print $1}' ${outfmt6} | sort -u | wc -l)
-echo "${outfmt6}: ${numHits}"
+echo "${outfmt6}: ${NUM_HITS}"
 
 date
