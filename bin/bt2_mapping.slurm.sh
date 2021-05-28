@@ -29,7 +29,7 @@ bowtie2 -p ${SLURM_CPUS_PER_TASK} \
 		-x ${bt2index} \
 		-1 ${derepOut1} \
 		-2 ${derepOut2} \
-		-S ${bt2_sam}
+		-S ${bt2_sam} \
 		--no-unal 2> ${bt2AlignStats}
 
 errorExit "Bowtie2 failed :("
@@ -40,7 +40,7 @@ samtools view -@ ${SLURM_CPUS_PER_TASK} -Sb ${bt2_sam} |
 		rm -f ${bt2_sam}
 
 # Generating mapping stats from each contig
-samtools coverage -@ ${SLURM_CPUS_PER_TASK} ${bt2SortedBam} > ${bt2TransSum}
+samtools coverage ${SLURM_CPUS_PER_TASK} ${bt2SortedBam} > ${bt2TransSum}
 
 errorExit "Samtools coverage failed!"
 echo "Samtools coverage complete. "

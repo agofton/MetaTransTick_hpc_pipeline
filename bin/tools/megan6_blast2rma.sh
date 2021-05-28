@@ -59,7 +59,7 @@ ${megan_exe} --in ${blast_in} \
 			 --minScore ${bitscore} \
 			 --maxExpected 0.0000000001 \
 			 --minPercentIdentity 70.0 \
-			 --topPercent 10 \
+			 --topPercent 5 \
 			 --minSupport 2 \
 			 --lcaAlgorithm weighted \
 			 --lcaCoveragePercent 80 \

@@ -38,10 +38,10 @@ ${daa2rma_exe} \
 	--useCompression \
 	--maxMatchesPerRead 1000 \
 	--classify \
-	--minScore 50 \
+	--minScore 100 \
 	--maxExpected 0.0000000001 \
-	--minPercentIdentity 50 \
-	--topPercent 10 \
+	--minPercentIdentity 60 \
+	--topPercent 5 \
 	--minSupport 2 \
 	--lcaAlgorithm weighted \
 	--lcaCoveragePercent 80 \

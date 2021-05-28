@@ -11,14 +11,15 @@ errorExit() {
 hmessage() {
 	echo "Script searches for a taxon key word (eg. Bacteria) in a tab_separated lca summary file and extract contigs that match that taxon key word."
 }
+
 usage() {
-	echo """Usage: $(basename "$0") 
-	-l <lca_sum.txt> 
-	-z <taxon to search> 
-	-t <trinity.fasta> 
-	-o <output .fasta file>
-	-h [how this message]"
-	< > = required, [ ] = optional
+	echo " Usage: $(basename "$0")" 
+	echo "-l <lca_sum.txt>" 
+	echo "-z <taxon to search>"
+	echo "-t <trinity.fasta>"
+	echo "-o <output .fasta file>"
+	echo "-h [how this message]"
+	echo "< > = required, [ ] = optional"
 }
 
 # Default params go here
@@ -38,7 +39,7 @@ done
 shift $((OPTIND - 1))
 
 # Find and extract contigs 
-echo ""
+echo '###################################################'
 echo "Finding ${tax} contigs in ${lca} with grep..."
 
 	seqIDs=$(basename $fasta .fasta).seqIDs.txt
@@ -46,16 +47,16 @@ echo "Finding ${tax} contigs in ${lca} with grep..."
 	errorExit "grep failed!" ""
 
 	# Check num contigs
-	n_contigs=$(wc -l ${seqIDs})
+	n_contigs=`wc -l ${seqIDs}`
 
-	if [[ ${n_contigs} -eq "0" ]]; then
-		echo "Number of ${tax} contigs = 0, exiting script."
-		rm -f ${seqIDs}
-		exit 0
-	else
+#	if [[ "${n_contigs}" -eq "0" ]]; then
+#		echo "Number of ${tax} contigs: 0, exiting script."
+#		rm -f ${seqIDs}
+#		exit 0
+#	else
 		echo "Number of ${tax} contigs: ${n_contigs}."
 		echo ""
-	fi
+#	fi
 	
 echo ""
 echo "Extracting ${tax} contigs from ${fasta}..."
