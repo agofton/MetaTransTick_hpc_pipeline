@@ -1,17 +1,19 @@
 #!/bin/bash
 date
 
-helpMessage() {
-	echo "./init.sh usage:"
-	echo "-f <sample_x_R1.fastq.gz> raw input R1 file"
-	echo "-r <sample_x_R2.fastq.gz> raw input R1 file" 
-	echo "-o <output_folder> all output will go here under a new directoy labeled by the sample ID"
-	echo "-h [show this message]"
-	echo "< > = manditory argument, [  ] = optional argument"
-	echo ""
-	echo "This script initialises all downstream slurm processes and directories needed for trascriptome assembly and homology-based taxonomic assignment of transcripts. Assumes input files are in the format: sample_xxx_R1.fastq.gz & sample_xxx_R2.fastq.gz, where 'sample_xxx_' can be whatever samples ID you want (The sample ID is defined as anything preceeding '_R1' and '_R2'. This sample ID will be carried through the whole analysis and appended onto the transcript IDs - so make sure it is not too long. Best to use complete paths so that nothing stuffs up!"
-	date ; exit 0
-}
+helpMessage()="
+Usage: ./init.sh [OPTIONS]
+Description:	This script initialises all downstream slurm processes and directories needed for trascriptome assembly and homology-based 
+		taxonomic assignment of transcripts. Assumes input files are in the format: sample_xxx_R1.fastq.gz & sample_xxx_R2.fastq.gz, 
+		where 'sample_xxx_' can be whatever samples ID you want (The sample ID is defined as anything preceeding '_R1' and '_R2'. 
+		This sample ID will be carried through the whole analysis and appended onto the transcript IDs, so make sure it is not too long.
+Options:
+-f <sample_x_R1.fastq.gz> raw input R1 file
+-r <sample_x_R2.fastq.gz> raw input R1 file
+-o <output_folder> all output will go here under a new directoy labeled by the sample ID
+-h [show this message]
+< > = manditory argument, [  ] = optional argument
+"
 
 errorExit() {
 	if [[ $? -ne 0 ]]; then
@@ -24,11 +26,13 @@ while getopts "hf:r:o:" OPTION
 do
 	case "${OPTION}"
 		in
-	        h) helpMessage;;
+	        h) echo "${helpMessage}
+		   date
+		   exit 0;;
 	        f) R1=${OPTARG};;
 	        r) R2=${OPTARG};;
-			o) outDir=${OPTARG};;
-			/?) echo "Invalid option: -$OPTARG" 1>&2
+		o) outDir=${OPTARG};;
+		/?) echo "Invalid option: -$OPTARG" 1>&2
 	esac
 done
 shift $((OPTIND - 1))
