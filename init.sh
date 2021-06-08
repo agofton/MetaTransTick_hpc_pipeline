@@ -1,7 +1,7 @@
 #!/bin/bash
 date
 
-helpMessage()="
+helpMessage="
 Usage: ./init.sh [OPTIONS]
 Description:	This script initialises all downstream slurm processes and directories needed for trascriptome assembly and homology-based 
 		taxonomic assignment of transcripts. Assumes input files are in the format: sample_xxx_R1.fastq.gz & sample_xxx_R2.fastq.gz, 
